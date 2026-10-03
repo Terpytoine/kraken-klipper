@@ -444,8 +444,11 @@ KrakenKlipperAudioProcessorEditor::~KrakenKlipperAudioProcessorEditor()
     stopTimer();
     for (auto* slider : {&driveSlider, &ceilingSlider, &kneeSlider, &mixSlider, &outputSlider})
         slider->setLookAndFeel(nullptr);
-    for (auto* button : {static_cast<juce::Button*>(&softButton), &mediumButton, &hardButton,
-                         &bypassButton, &deltaButton})
+    for (auto* button : {static_cast<juce::Button*>(&softButton),
+                         static_cast<juce::Button*>(&mediumButton),
+                         static_cast<juce::Button*>(&hardButton),
+                         static_cast<juce::Button*>(&bypassButton),
+                         static_cast<juce::Button*>(&deltaButton)})
         button->setLookAndFeel(nullptr);
     presetSelector.setLookAndFeel(nullptr);
 }
@@ -502,7 +505,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     drawLightning(g, juce::Rectangle<float>(logoTile.getX() + 8.0f, logoTile.getY() + 12.0f,
                                             19.0f, 42.0f));
     g.setColour(paper);
-    g.setFont(juce::Font(juce::FontOptions(23.0f, juce::Font::heavy)));
+    g.setFont(juce::Font(juce::FontOptions(23.0f, juce::Font::bold)));
     g.drawText("KK", juce::Rectangle<int>(static_cast<int>(logoTile.getX() + 28.0f),
                                             static_cast<int>(logoTile.getY() + 8.0f), 43, 50),
                juce::Justification::centred);
@@ -510,7 +513,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawLine(33.0f, 79.0f, 86.0f, 79.0f, 1.2f);
 
     g.setColour(paper);
-    g.setFont(juce::Font(juce::FontOptions(26.0f, juce::Font::heavy)));
+    g.setFont(juce::Font(juce::FontOptions(26.0f, juce::Font::bold)));
     g.drawText("KRAKEN KLIPPER", 112, 20, 440, 36, juce::Justification::centredLeft);
     g.setColour(violet);
     g.setFont(juce::Font(juce::FontOptions(11.0f, juce::Font::bold)));
