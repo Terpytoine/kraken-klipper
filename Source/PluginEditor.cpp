@@ -202,173 +202,6 @@ public:
     }
 };
 
-void drawLightning(juce::Graphics& g, juce::Rectangle<float> area)
-{
-    juce::Path bolt;
-    bolt.startNewSubPath(area.getX() + area.getWidth() * 0.58f, area.getY());
-    bolt.lineTo(area.getX() + area.getWidth() * 0.17f, area.getY() + area.getHeight() * 0.54f);
-    bolt.lineTo(area.getX() + area.getWidth() * 0.47f, area.getY() + area.getHeight() * 0.54f);
-    bolt.lineTo(area.getX() + area.getWidth() * 0.31f, area.getBottom());
-    bolt.lineTo(area.getX() + area.getWidth() * 0.83f, area.getY() + area.getHeight() * 0.38f);
-    bolt.lineTo(area.getX() + area.getWidth() * 0.55f, area.getY() + area.getHeight() * 0.38f);
-    bolt.closeSubPath();
-    g.setColour(purple.withAlpha(0.27f));
-    g.fillPath(bolt, juce::AffineTransform::scale(1.18f).translated(-area.getWidth() * 0.09f, -area.getHeight() * 0.03f));
-    g.setColour(gold);
-    g.fillPath(bolt);
-}
-
-void drawDoubleCupMark(juce::Graphics& g, juce::Rectangle<float> area)
-{
-    auto drawCup = [&](juce::Rectangle<float> cup, bool backCup)
-    {
-        const auto shift = backCup ? 0.0f : 2.0f;
-        juce::Path body;
-        body.startNewSubPath(cup.getX() + cup.getWidth() * 0.12f, cup.getY() + 8.0f + shift);
-        body.lineTo(cup.getRight() - cup.getWidth() * 0.12f, cup.getY() + 8.0f + shift);
-        body.lineTo(cup.getX() + cup.getWidth() * 0.82f, cup.getBottom() - 2.0f);
-        body.quadraticTo(cup.getCentreX(), cup.getBottom() + 2.0f,
-                         cup.getX() + cup.getWidth() * 0.18f, cup.getBottom() - 2.0f);
-        body.closeSubPath();
-
-        g.setColour(juce::Colour(0xff090612).withAlpha(0.88f));
-        g.fillPath(body);
-        g.setColour(backCup ? violet.withAlpha(0.76f) : gold.withAlpha(0.9f));
-        g.strokePath(body, juce::PathStrokeType(1.8f));
-        g.setColour(purple.withAlpha(0.45f));
-        g.fillRect(cup.getX() + cup.getWidth() * 0.22f, cup.getY() + 13.0f + shift,
-                   cup.getWidth() * 0.56f, 4.0f);
-
-        g.setColour(paper.withAlpha(0.8f));
-        g.drawLine(cup.getX() + cup.getWidth() * 0.6f, cup.getY() + 5.0f + shift,
-                   cup.getX() + cup.getWidth() * 0.78f, cup.getY() - 3.0f + shift, 1.6f);
-        g.setColour(violet.withAlpha(0.65f));
-        g.drawLine(cup.getX() + cup.getWidth() * 0.28f, cup.getY() + 19.0f + shift,
-                   cup.getX() + cup.getWidth() * 0.39f, cup.getBottom() - 7.0f, 1.0f);
-    };
-
-    const auto cupWidth = area.getWidth() * 0.43f;
-    const auto cupHeight = area.getHeight() * 0.78f;
-    drawCup({area.getX() + area.getWidth() * 0.08f, area.getY() + area.getHeight() * 0.12f,
-             cupWidth, cupHeight}, true);
-    drawCup({area.getX() + area.getWidth() * 0.46f, area.getY() + area.getHeight() * 0.20f,
-             cupWidth, cupHeight}, false);
-
-    juce::Path splash;
-    splash.startNewSubPath(area.getX() + area.getWidth() * 0.49f,
-                           area.getY() + area.getHeight() * 0.40f);
-    splash.cubicTo(area.getX() + area.getWidth() * 0.36f, area.getY() + area.getHeight() * 0.25f,
-                   area.getX() + area.getWidth() * 0.22f, area.getY() + area.getHeight() * 0.14f,
-                   area.getX() + area.getWidth() * 0.15f, area.getY() + area.getHeight() * 0.25f);
-    splash.cubicTo(area.getX() + area.getWidth() * 0.10f, area.getY() + area.getHeight() * 0.34f,
-                   area.getX() + area.getWidth() * 0.24f, area.getY() + area.getHeight() * 0.38f,
-                   area.getX() + area.getWidth() * 0.31f, area.getY() + area.getHeight() * 0.47f);
-    splash.cubicTo(area.getX() + area.getWidth() * 0.18f, area.getY() + area.getHeight() * 0.52f,
-                   area.getX() + area.getWidth() * 0.20f, area.getY() + area.getHeight() * 0.65f,
-                   area.getX() + area.getWidth() * 0.31f, area.getY() + area.getHeight() * 0.60f);
-    splash.cubicTo(area.getX() + area.getWidth() * 0.37f, area.getY() + area.getHeight() * 0.57f,
-                   area.getX() + area.getWidth() * 0.40f, area.getY() + area.getHeight() * 0.49f,
-                   area.getX() + area.getWidth() * 0.49f, area.getY() + area.getHeight() * 0.48f);
-    splash.closeSubPath();
-    g.setColour(purple.withAlpha(0.94f));
-    g.fillPath(splash);
-    g.setColour(violet.withAlpha(0.9f));
-    g.strokePath(splash, juce::PathStrokeType(1.0f));
-    for (auto drop : {juce::Point<float>{0.17f, 0.22f}, {0.10f, 0.53f}, {0.24f, 0.70f}})
-    {
-        const auto x = area.getX() + area.getWidth() * drop.x;
-        const auto y = area.getY() + area.getHeight() * drop.y;
-        g.setColour(violet.withAlpha(0.88f));
-        g.fillEllipse(x - 1.6f, y - 1.6f, 3.2f, 3.2f);
-    }
-}
-
-void drawSprayPaint(juce::Graphics& g, juce::Rectangle<float> area)
-{
-    const auto centre = area.getCentre();
-    g.setGradientFill(juce::ColourGradient(purple.withAlpha(0.19f), centre,
-                                           juce::Colour(0xff0c0811).withAlpha(0.0f),
-                                           {centre.x, area.getBottom()}, true));
-    g.fillRoundedRectangle(area, 9.0f);
-
-    const std::array<juce::Point<float>, 16> flecks{{
-        {0.04f, 0.35f}, {0.09f, 0.71f}, {0.15f, 0.22f}, {0.21f, 0.83f},
-        {0.27f, 0.43f}, {0.34f, 0.18f}, {0.42f, 0.76f}, {0.49f, 0.31f},
-        {0.57f, 0.84f}, {0.64f, 0.23f}, {0.72f, 0.64f}, {0.79f, 0.34f},
-        {0.86f, 0.78f}, {0.91f, 0.18f}, {0.96f, 0.49f}, {0.53f, 0.56f}
-    }};
-    for (size_t i = 0; i < flecks.size(); ++i)
-    {
-        const auto point = juce::Point<float>(area.getX() + area.getWidth() * flecks[i].x,
-                                               area.getY() + area.getHeight() * flecks[i].y);
-        const auto radius = (i % 3 == 0 ? 2.6f : 1.5f);
-        g.setColour((i % 4 == 0 ? gold : violet).withAlpha(i % 3 == 0 ? 0.42f : 0.27f));
-        g.fillEllipse(point.x - radius, point.y - radius, radius * 2.0f, radius * 2.0f);
-    }
-
-    g.setColour(violet.withAlpha(0.25f));
-    for (auto fraction : {0.025f, 0.965f})
-    {
-        const auto x = area.getX() + area.getWidth() * fraction;
-        const auto y = area.getY() + area.getHeight() * (fraction < 0.5f ? 0.4f : 0.23f);
-        g.drawLine(x, y, x + 1.5f, juce::jmin(area.getBottom() - 3.0f, y + 15.0f), 1.2f);
-    }
-
-    juce::Path flash;
-    flash.startNewSubPath(area.getX() + area.getWidth() * 0.89f, area.getY() + 5.0f);
-    flash.lineTo(area.getX() + area.getWidth() * 0.84f, area.getY() + area.getHeight() * 0.42f);
-    flash.lineTo(area.getX() + area.getWidth() * 0.90f, area.getY() + area.getHeight() * 0.42f);
-    flash.lineTo(area.getX() + area.getWidth() * 0.86f, area.getBottom() - 4.0f);
-    g.setColour(purple.withAlpha(0.30f));
-    g.strokePath(flash, juce::PathStrokeType(1.8f, juce::PathStrokeType::curved,
-                                             juce::PathStrokeType::rounded));
-}
-
-void drawBayBridge(juce::Graphics& g, juce::Rectangle<float> area)
-{
-    const auto y = area.getY() + area.getHeight() * 0.61f;
-    const auto leftTower = area.getX() + area.getWidth() * 0.31f;
-    const auto rightTower = area.getX() + area.getWidth() * 0.70f;
-    const auto towerTop = y - area.getHeight() * 0.30f;
-    const auto bridgeColour = juce::Colour(0xff9c66c8).withAlpha(0.34f);
-
-    g.setColour(bridgeColour);
-    g.drawLine(area.getX(), y, area.getRight(), y, 2.0f);
-    g.drawLine(area.getX(), y + 4.0f, area.getRight(), y + 4.0f, 1.0f);
-    for (auto towerX : {leftTower, rightTower})
-    {
-        g.drawLine(towerX - 5.0f, towerTop, towerX - 5.0f, y + 3.0f, 2.4f);
-        g.drawLine(towerX + 5.0f, towerTop, towerX + 5.0f, y + 3.0f, 2.4f);
-        g.drawLine(towerX - 8.0f, towerTop + 14.0f, towerX + 8.0f, towerTop + 14.0f, 1.6f);
-        g.drawLine(towerX - 8.0f, towerTop + 30.0f, towerX + 8.0f, towerTop + 30.0f, 1.6f);
-        g.drawLine(towerX - 8.0f, towerTop, towerX + 8.0f, towerTop, 2.0f);
-    }
-
-    juce::Path cable;
-    cable.startNewSubPath(area.getX(), y - 2.0f);
-    cable.cubicTo(leftTower - 18.0f, towerTop + 2.0f, leftTower - 7.0f, towerTop - 3.0f,
-                  leftTower, towerTop);
-    cable.cubicTo(leftTower + 38.0f, towerTop + 4.0f, rightTower - 45.0f, towerTop + 8.0f,
-                  rightTower, towerTop);
-    cable.cubicTo(rightTower + 35.0f, towerTop + 7.0f, rightTower + 58.0f, y - 5.0f,
-                  area.getRight(), y - 2.0f);
-    g.strokePath(cable, juce::PathStrokeType(1.5f));
-
-    for (auto fraction = 0.10f; fraction < 0.98f; fraction += 0.035f)
-    {
-        const auto px = area.getX() + area.getWidth() * fraction;
-        if (std::abs(px - leftTower) < 10.0f || std::abs(px - rightTower) < 10.0f)
-            continue;
-        const auto d = px < leftTower ? (px - area.getX()) / (leftTower - area.getX())
-                    : px < rightTower ? (px - leftTower) / (rightTower - leftTower)
-                                      : (px - rightTower) / (area.getRight() - rightTower);
-        const auto topY = px < leftTower ? y - d * (y - towerTop)
-                         : px < rightTower ? towerTop + std::sin(d * juce::MathConstants<float>::pi) * 5.0f
-                                           : towerTop + d * (y - towerTop);
-        g.drawLine(px, topY, px, y, 0.55f);
-    }
-}
-
 }
 
 class KrakenCurveDisplay final : public juce::Component,
@@ -707,7 +540,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(25.0f, 10.0f), 36.0f);
     if (headerArtwork.isValid())
         g.drawImageWithin(headerArtwork, 18, 0, getWidth() - 238, 238,
-                          juce::RectanglePlacement::centredLeft);
+                          juce::RectanglePlacement::xLeft | juce::RectanglePlacement::yMid);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 12.0f, juce::Font::bold)));
     g.setColour(gold);
     g.drawText("TODB / THE BAY", getWidth() - 214, 60, 177, 25, juce::Justification::centredRight);
@@ -1008,3 +841,4 @@ void KrakenKlipperAudioProcessorEditor::loadUserPreset()
             }
         });
 }
+
