@@ -50,17 +50,37 @@ or rescan plugins in your DAW. The installer places the plugin in:
 To share it, send the Setup.exe. The installer also places the matching source
 archive and license notices alongside its program files.
 
-If you do not have Visual Studio on your computer, the included GitHub Actions
-workflow can build and package the installer on a Windows runner after this
-project is uploaded to a GitHub repository. This project folder itself does
-not contain a compiled plugin or installer yet.
+DOWNLOAD AND INSTALL
+--------------------
+Download KRAKEN-KLIPPER-Setup.exe from the latest release:
+
+  https://github.com/Terpytoine/kraken-klipper/releases/latest
+
+Close your DAW, run the installer, approve the standard Windows administrator
+prompt, and let it install the VST3 bundle into the shared Windows VST3 folder.
+Then restart or rescan plugins in your DAW and load KRAKEN KLIPPER as an effect.
+The installer is not digitally signed, so Windows SmartScreen may show an
+unknown-publisher warning. That is a reputation/signing warning, not proof of
+malware; only download the installer from this project's Releases page.
+
+BUILD AND VERIFICATION
+----------------------
+The Windows GitHub Actions workflow builds the x64 VST3, runs the transfer-curve
+checks, and packages the installer. The first successful workflow run completed
+all three stages. The curve checks cover ceiling, monotonicity, symmetry, knee
+continuity, unity below the knee, and non-finite input safety.
+
+The binary has been compiled and its curve checks passed, but it has not yet
+been independently loaded in a DAW on multiple systems. Please report host or
+installer issues in the repository's Issues page.
 
 TESTS
 -----
 The CMake build runs transfer-curve checks for ceiling, monotonicity,
 symmetry, knee continuity, unity below the knee, and non-finite input safety.
-The source has not yet been compiled or loaded in a DAW in this environment;
-do not treat the included source as a verified VST3 binary.
+The current Windows VST3 build passed these curve checks in GitHub Actions.
+The curve checks validate the shaping math, not every DAW/host combination or
+subjective audio quality.
 
 COMPARISON TARGET
 -----------------
