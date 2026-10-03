@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(KrakenKlipper VERSION 1.0.2 LANGUAGES C CXX)
+project(KrakenKlipper VERSION 1.0.3 LANGUAGES C CXX)
 
 # Link the Windows runtime statically so the VST3 does not require a separate
 # Visual C++ runtime installer on a friend's computer.
@@ -34,7 +34,8 @@ juce_add_plugin(KrakenKlipper
 juce_generate_juce_header(KrakenKlipper)
 
 juce_add_binary_data(DoubleCupArtwork SOURCES
-    Source/Resources/BayMural.jpg
+    Source/Resources/SyrupPool.png
+    Source/Resources/DoubleCupHeader.png
     Source/Resources/TODBTag.jpg
 )
 

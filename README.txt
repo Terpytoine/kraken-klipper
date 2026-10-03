@@ -7,8 +7,8 @@ Medium, and Hard clipping, 8x oversampling, parallel mix, output trim, Delta
 audition, live meters, a live transfer curve, quick-start presets, and save/load
 for your own .dcpreset files.
 
-The interface is painted in a dark Bay Area mural style, with the Bay Bridge,
-purple spill art, and the supplied TODB logo. “Yadadamean?” is Bay Area slang
+The interface is a gold and purple double-cup syrup shell, with a detailed Bay Bridge,
+graffiti title artwork, miniature cup knobs, and the supplied TODB logo. Each cup's syrup fill and drip length follows its knob position. Brief ripples and droplets respond to control changes on the UI thread; these visual effects do not change the audio. “Yadadamean?” is Bay Area slang
 for “do you know what I mean?” The project is independent and is not affiliated
 with another audio company, sports team, or brand.
 
@@ -62,7 +62,7 @@ after later processing or lossy encoding.
 INSTALL
 -------
 1. Close your DAW.
-2. Run DOUBLE-CUP-CLIPPER-Setup-v1.0.2.exe and approve the standard administrator prompt.
+2. Run DOUBLE-CUP-CLIPPER-Setup-v1.0.3.exe and approve the standard administrator prompt.
 3. Reopen your DAW, rescan VST3 plug-ins, and load DOUBLE CUP CLIPPER as an effect.
 
 The installer places the VST3 here:
@@ -96,7 +96,7 @@ Open PowerShell in this folder and run:
   .\build-windows.ps1
 
 This builds the VST3, runs the transfer-curve and processor smoke checks, and
-creates DOUBLE-CUP-CLIPPER-Setup-v1.0.2.exe plus a matching source archive in
+creates DOUBLE-CUP-CLIPPER-Setup-v1.0.3.exe plus a matching source archive in
 .\dist\.
 
 BUILD AND VERIFICATION
@@ -117,3 +117,4 @@ LICENSING
 ---------
 This project uses JUCE 9.0.3 through CMake FetchContent and is shared under
 AGPLv3-or-later. Read THIRD_PARTY_NOTICES.md before building or redistributing.
+

@@ -1,5 +1,5 @@
 #define PluginName "DOUBLE CUP CLIPPER"
-#define PluginVersion "1.0.2"
+#define PluginVersion "1.0.3"
 #define PluginPublisher "TODB"
 #define PluginBundle "build\KrakenKlipper_artefacts\Release\VST3\DOUBLE CUP CLIPPER.vst3"
 
@@ -16,7 +16,7 @@ PrivilegesRequired=admin
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 OutputDir=dist
-OutputBaseFilename=DOUBLE-CUP-CLIPPER-Setup-v1.0.2
+OutputBaseFilename=DOUBLE-CUP-CLIPPER-Setup-v1.0.3
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -31,7 +31,7 @@ Source: "{#PluginBundle}\*"; DestDir: "{commoncf}\VST3\TODB\DOUBLE CUP CLIPPER.v
 Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\Double-Cup-Clipper-Source-v1.0.2.zip"; DestDir: "{app}\Source"; Flags: ignoreversion
+Source: "dist\Double-Cup-Clipper-Source-v1.0.3.zip"; DestDir: "{app}\Source"; Flags: ignoreversion
 
 [InstallDelete]
 ; Remove the previous VST3 bundle so a manual replacement install cannot leave two plug-ins in the host scan path.
