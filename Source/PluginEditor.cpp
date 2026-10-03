@@ -780,8 +780,8 @@ void KrakenKlipperAudioProcessorEditor::resized()
 
     const auto controlW = (width - 120) / 5;
     const auto firstX = 56;
-    const auto y = 197;
-    const auto h = 153;
+    const auto y = 204;
+    const auto h = 146;
     auto place = [&](juce::Slider& slider, int index)
     {
         slider.setBounds(firstX + index * controlW, y, controlW - 2, h);
