@@ -5,13 +5,19 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   windows-vst3:
     # This project uses the Visual Studio 2022 generator. Keep the runner on
     # the matching image instead of windows-latest, which can move to VS 2026.
     runs-on: windows-2022
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
       - name: Configure
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON
       - name: Build VST3 and processing checks
@@ -21,19 +27,25 @@ jobs:
       - name: Validate actual VST3 host compatibility
         shell: pwsh
         run: |
-          Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip
+          Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/download/v1.0.4/pluginval_Windows.zip -OutFile pluginval.zip
+          if ((Get-FileHash pluginval.zip -Algorithm SHA256).Hash -ne "c08e61ce3b96db41636f8ec7e76f4c7e2c13ebdac7fa1b5a1f52b4f32ec715ab") { throw "pluginval download checksum mismatch" }
           Expand-Archive pluginval.zip -DestinationPath pluginval
           $validator = Get-ChildItem pluginval -Recurse -Filter pluginval.exe | Select-Object -First 1
           if (-not $validator) { throw "pluginval executable not found" }
           & $validator.FullName --strictness-level 5 --validate-in-process --output-dir validation-logs --validate "build\KrakenKlipper_artefacts\Release\VST3\DOUBLE CUP CLIPPER.vst3" | Tee-Object -FilePath validation-console.txt
           if ($LASTEXITCODE -ne 0) { throw "VST3 validation failed" }
       - name: Install Inno Setup
-        run: choco install innosetup --yes --no-progress
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe -OutFile innosetup.exe
+          if ((Get-FileHash innosetup.exe -Algorithm SHA256).Hash -ne "9c73c3bae7ed48d44112a0f48e66742c00090bdb5bef71d9d3c056c66e97b732") { throw "Inno Setup download checksum mismatch" }
+          $installer = Start-Process -FilePath .\innosetup.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-" -WindowStyle Hidden -Wait -PassThru
+          if ($installer.ExitCode -ne 0) { throw "Inno Setup installation failed" }
       - name: Package one-file installer
         shell: pwsh
         run: .\package-windows.ps1
       - name: Upload installer and matching source
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: DOUBLE-CUP-CLIPPER-v1.0.4-Windows-Installer
           path: |
