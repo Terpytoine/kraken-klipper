@@ -543,13 +543,13 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
         processor.parameters, "delta", deltaButton);
 
     presetSelector.addItem("SELECT PRESET", 1);
-    presetSelector.addItem("808 REEF", 2);
-    presetSelector.addItem("DRUM SNAP", 3);
-    presetSelector.addItem("VIOLET PUNCH", 4);
-    presetSelector.addItem("BUS GLIDE", 5);
+    presetSelector.addItem("808 WEIGHT", 2);
+    presetSelector.addItem("DRUM PUNCH", 3);
+    presetSelector.addItem("MEDIUM PUNCH", 4);
+    presetSelector.addItem("BUS GLUE", 5);
     presetSelector.setSelectedId(1, juce::dontSendNotification);
     presetSelector.setLookAndFeel(customLookAndFeel.get());
-    presetSelector.setTooltip("Load a starting preset. It updates Drive, Ceiling, Knee, Mix, Output, and clip character.");
+    presetSelector.setTooltip("Choose a starting point: 808 Weight for bass, Drum Punch for drums, Medium Punch for general use, or Bus Glue for a subtle blend. Then adjust Drive and Output by ear.");
     presetSelector.onChange = [this]
     {
         if (presetSelector.getSelectedId() > 1)
@@ -695,8 +695,8 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawText("CHARACTER", 42, 131, 94, 16, juce::Justification::centredLeft);
     const auto captionControlWidth = (getWidth() - 120) / 5;
     const auto captionFirstX = 56;
-    const std::array<juce::String, 5> hints{{"PUSH INTO CLIP", "CLIP THRESHOLD", "KNEE WIDTH",
-                                             "DRY / WET", "FINAL LEVEL"}};
+    const std::array<juce::String, 5> hints{{"MORE DRIVE = MORE CLIP", "MAX CLIP LEVEL", "SOFTER OR SHARPER",
+                                             "DRY / EFFECT BLEND", "FINAL LOUDNESS"}};
     g.setColour(muted);
     g.setFont(juce::Font(juce::FontOptions(8.5f, juce::Font::bold)));
     for (int i = 0; i < static_cast<int>(hints.size()); ++i)
@@ -783,10 +783,10 @@ void KrakenKlipperAudioProcessorEditor::applyPreset(int preset)
     Values values{};
     switch (preset)
     {
-        case 2: values = {8.0f, -3.0f, 18.0f, 100.0f, -1.0f, 0.0f}; break; // 808 Reef
-        case 3: values = {6.0f, -2.0f, 5.0f, 88.0f, -1.0f, 2.0f}; break;  // Drum Snap
-        case 4: values = {5.0f, -1.0f, 10.0f, 100.0f, 0.0f, 1.0f}; break; // Violet Punch
-        case 5: values = {2.0f, -4.0f, 22.0f, 62.0f, 0.0f, 0.0f}; break; // Bus Glide
+        case 2: values = {8.0f, -3.0f, 18.0f, 100.0f, -1.0f, 0.0f}; break; // 808 Weight
+        case 3: values = {6.0f, -2.0f, 5.0f, 88.0f, -1.0f, 2.0f}; break;  // Drum Punch
+        case 4: values = {5.0f, -1.0f, 10.0f, 100.0f, 0.0f, 1.0f}; break; // Medium Punch
+        case 5: values = {2.0f, -4.0f, 22.0f, 62.0f, 0.0f, 0.0f}; break; // Bus Glue
         default: return;
     }
     setPluginParameter("drive", values.drive);
