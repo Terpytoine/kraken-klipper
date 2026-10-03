@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(KrakenKlipper VERSION 1.0.0 LANGUAGES C CXX)
+project(KrakenKlipper VERSION 1.0.1 LANGUAGES C CXX)
 
 # Link the Windows runtime statically so the VST3 does not require a separate
 # Visual C++ runtime installer on a friend's computer.
@@ -16,11 +16,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(JUCE)
 
 juce_add_plugin(KrakenKlipper
-    COMPANY_NAME "TODB Audio"
-    BUNDLE_ID com.todb.krakenklipper
+    COMPANY_NAME "Bay Area Plugins"
+    BUNDLE_ID com.bayareaplugins.doublecupclipper
     PLUGIN_MANUFACTURER_CODE TODB
     PLUGIN_CODE Kk01
-    PRODUCT_NAME "KRAKEN KLIPPER"
+    PRODUCT_NAME "DOUBLE CUP CLIPPER"
     FORMATS VST3
     VST3_CATEGORIES Fx
     IS_SYNTH FALSE
@@ -64,4 +64,13 @@ if(BUILD_TESTING)
     target_include_directories(KrakenCurveChecks PRIVATE Source)
     target_compile_features(KrakenCurveChecks PRIVATE cxx_std_17)
     add_test(NAME KrakenCurveChecks COMMAND KrakenCurveChecks)
+
+    add_executable(DoubleCupProcessorChecks tests/processor_checks.cpp)
+    target_include_directories(DoubleCupProcessorChecks PRIVATE
+        Source
+        "${CMAKE_CURRENT_BINARY_DIR}/KrakenKlipper_artefacts/JuceLibraryCode"
+    )
+    target_link_libraries(DoubleCupProcessorChecks PRIVATE KrakenKlipper)
+    target_compile_features(DoubleCupProcessorChecks PRIVATE cxx_std_17)
+    add_test(NAME DoubleCupProcessorChecks COMMAND DoubleCupProcessorChecks)
 endif()

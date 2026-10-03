@@ -24,9 +24,9 @@ if ($LASTEXITCODE -ne 0) { throw "CMake configuration failed." }
 if ($LASTEXITCODE -ne 0) { throw "The Release build failed." }
 
 & $cmakeExe -E env ctest --test-dir $buildDir -C Release --output-on-failure
-if ($LASTEXITCODE -ne 0) { throw "The transfer-curve checks failed." }
+if ($LASTEXITCODE -ne 0) { throw "The transfer-curve or processor smoke checks failed." }
 
 & (Join-Path $projectRoot "package-windows.ps1")
 if ($LASTEXITCODE -ne 0) { throw "The Windows installer packaging step failed." }
 
-Write-Host "Build, transfer-curve checks, and installer packaging completed successfully."
+Write-Host "Build, transfer-curve checks, processor smoke checks, and installer packaging completed successfully."

@@ -1,10 +1,11 @@
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$bundle = Join-Path $projectRoot "build\KrakenKlipper_artefacts\Release\VST3\KRAKEN KLIPPER.vst3"
+$bundle = Join-Path $projectRoot "build\KrakenKlipper_artefacts\Release\VST3\DOUBLE CUP CLIPPER.vst3"
 $dist = Join-Path $projectRoot "dist"
 $sourceStage = Join-Path $dist "source-stage"
-$sourceZip = Join-Path $dist "Kraken-Klipper-Source.zip"
-$setupExe = Join-Path $dist "KRAKEN-KLIPPER-Setup.exe"
+$sourceZip = Join-Path $dist "Double-Cup-Clipper-Source.zip"
+$legacySourceZip = Join-Path $dist "Kraken-Klipper-Source.zip"
+$setupExe = Join-Path $dist "DOUBLE-CUP-CLIPPER-Setup.exe"
 $setupScript = Join-Path $projectRoot "KRAKEN-KLIPPER.iss"
 
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
@@ -14,6 +15,10 @@ $separator = [System.IO.Path]::DirectorySeparatorChar
 if (-not $fullSourceStage.StartsWith($fullDist + $separator, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Refusing to remove a source staging folder outside dist."
 }
+if (-not [System.IO.Path]::GetFullPath($legacySourceZip).StartsWith($fullDist + $separator, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Refusing to remove a legacy source archive outside dist."
+}
+if (Test-Path -LiteralPath $legacySourceZip -PathType Leaf) { Remove-Item -LiteralPath $legacySourceZip -Force }
 if (Test-Path -LiteralPath $sourceStage) { Remove-Item -LiteralPath $sourceStage -Recurse -Force }
 New-Item -ItemType Directory -Path $sourceStage -Force | Out-Null
 

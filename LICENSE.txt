@@ -1,4 +1,4 @@
-KRAKEN KLIPPER — TODB
+DOUBLE CUP CLIPPER — BAY AREA PLUGINS / TODB
 Copyright (C) 2026 TODB
 
 This program is free software: you can redistribute it and/or modify it under
