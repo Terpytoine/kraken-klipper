@@ -390,7 +390,9 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     mixSlider.setTextValueSuffix(" %");
     outputSlider.setTextValueSuffix(" dB");
 
-    for (auto* button : {static_cast<juce::Button*>(&softButton), &mediumButton, &hardButton})
+    for (auto* button : {static_cast<juce::Button*>(&softButton),
+                         static_cast<juce::Button*>(&mediumButton),
+                         static_cast<juce::Button*>(&hardButton)})
     {
         addAndMakeVisible(button);
         button->setLookAndFeel(customLookAndFeel.get());
@@ -401,7 +403,8 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     mediumButton.onClick = [this] { setCharacter(1); };
     hardButton.onClick = [this] { setCharacter(2); };
 
-    for (auto* button : {static_cast<juce::Button*>(&bypassButton), &deltaButton})
+    for (auto* button : {static_cast<juce::Button*>(&bypassButton),
+                         static_cast<juce::Button*>(&deltaButton)})
     {
         addAndMakeVisible(button);
         button->setLookAndFeel(customLookAndFeel.get());
