@@ -171,10 +171,55 @@ public:
                               .withFallbacks({"Arial Black", "Arial"}));
     }
 
+    void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button, bool hovered, bool pressed) override
+    {
+        const auto y = static_cast<float>(button.getHeight()) * 0.5f - 9.0f;
+        g.setGradientFill(juce::ColourGradient(button.getToggleState() ? purple : panel,
+                                              4.0f, y, ink, 22.0f, y + 18.0f, false));
+        g.fillRoundedRectangle(3.0f, y, 22.0f, 18.0f, 6.0f);
+        g.setColour(gold.withAlpha(hovered || pressed || button.getToggleState() ? 1.0f : 0.55f));
+        g.drawRoundedRectangle(3.0f, y, 22.0f, 18.0f, 6.0f, 1.2f);
+        if (button.getToggleState())
+        {
+            juce::Path tick;
+            tick.startNewSubPath(8.0f, y + 9.0f);
+            tick.lineTo(12.0f, y + 13.0f);
+            tick.lineTo(20.0f, y + 5.0f);
+            g.strokePath(tick, juce::PathStrokeType(2.0f));
+        }
+        g.setColour(paper);
+        g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 13.0f, juce::Font::bold)));
+        g.drawText(button.getButtonText(), 32, 0, button.getWidth() - 33, button.getHeight(),
+                    juce::Justification::centredLeft);
+    }
+
+    void drawComboBox(juce::Graphics& g, int width, int height, bool pressed,
+                      int, int, int, int, juce::ComboBox&) override
+    {
+        const auto bounds = juce::Rectangle<float>(0.5f, 0.5f, static_cast<float>(width) - 1.0f,
+                                                   static_cast<float>(height) - 1.0f);
+        g.setGradientFill(juce::ColourGradient(pressed ? juce::Colour(0xff633491) : juce::Colour(0xff351d4e),
+                                              bounds.getTopLeft(), ink, bounds.getBottomRight(), false));
+        g.fillRoundedRectangle(bounds, 8.0f);
+        g.setColour(gold.withAlpha(0.78f));
+        g.drawRoundedRectangle(bounds, 8.0f, 1.2f);
+        juce::Path arrow;
+        const auto midY = static_cast<float>(height) * 0.5f;
+        arrow.startNewSubPath(static_cast<float>(width) - 23.0f, midY - 3.0f);
+        arrow.lineTo(static_cast<float>(width) - 17.0f, midY + 3.0f);
+        arrow.lineTo(static_cast<float>(width) - 11.0f, midY - 3.0f);
+        g.strokePath(arrow, juce::PathStrokeType(2.0f));
+    }
+
+    juce::Font getComboBoxFont(juce::ComboBox&) override
+    {
+        return juce::Font(juce::FontOptions("Trebuchet MS", 13.0f, juce::Font::bold));
+    }
+
     static juce::TextLayout helpLayout(const juce::String& text)
     {
         juce::AttributedString content;
-        content.append(text, juce::Font(juce::FontOptions("Trebuchet MS", 13.0f)), paper);
+        content.append(text, juce::Font(juce::FontOptions("Trebuchet MS", 13.0f, juce::Font::plain)), paper);
         juce::TextLayout layout;
         layout.createLayout(content, 330.0f);
         return layout;
@@ -532,15 +577,14 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
 {
     const auto width = static_cast<float>(getWidth());
     g.fillAll(ink);
-    if (panelMural.isValid())
-        g.drawImageWithin(panelMural, 0, 0, getWidth(), getHeight(), juce::RectanglePlacement::stretchToFit);
+    if (scaledPool.isValid())
+        g.drawImageAt(scaledPool, 0, 0);
 
     // The entire shell is a double foam-cup rim with glossy purple liquid.
     g.setColour(juce::Colour(0xff1b0630).withAlpha(0.30f));
     g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(25.0f, 10.0f), 36.0f);
-    if (headerArtwork.isValid())
-        g.drawImageWithin(headerArtwork, 18, 0, getWidth() - 238, 238,
-                          juce::RectanglePlacement::xLeft | juce::RectanglePlacement::yMid);
+    if (scaledHeader.isValid())
+        g.drawImageAt(scaledHeader, 18, 0);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 12.0f, juce::Font::bold)));
     g.setColour(gold);
     g.drawText("TODB / THE BAY", getWidth() - 214, 60, 177, 25, juce::Justification::centredRight);
@@ -654,6 +698,20 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
 void KrakenKlipperAudioProcessorEditor::resized()
 {
     const auto width = getWidth();
+    // Resample high-resolution art once per resize, rather than on every animated frame.
+    if (panelMural.isValid() && width > 0 && getHeight() > 0)
+    {
+        scaledPool = juce::Image(juce::Image::RGB, width, getHeight(), true);
+        juce::Graphics poolGraphics(scaledPool);
+        poolGraphics.drawImageWithin(panelMural, 0, 0, width, getHeight(), juce::RectanglePlacement::stretchToFit);
+    }
+    if (headerArtwork.isValid() && width > 238)
+    {
+        scaledHeader = juce::Image(juce::Image::ARGB, width - 238, 238, true);
+        juce::Graphics headerGraphics(scaledHeader);
+        headerGraphics.drawImageWithin(headerArtwork, 0, 0, width - 238, 238,
+                                        juce::RectanglePlacement::xLeft | juce::RectanglePlacement::yMid);
+    }
     softButton.setBounds(47, 293, 103, 31);
     mediumButton.setBounds(158, 293, 112, 31);
     hardButton.setBounds(278, 293, 112, 31);

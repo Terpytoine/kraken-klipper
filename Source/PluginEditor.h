@@ -49,6 +49,7 @@ private:
     std::unique_ptr<KrakenMeterDisplay> meterDisplay;
     juce::Image panelMural;
     juce::Image headerArtwork;
+    juce::Image scaledPool, scaledHeader;
     juce::Image todbTag;
     std::array<float, 8> lastVisualParameters{};
     float syrupEnergy = 0.0f;
