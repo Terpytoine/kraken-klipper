@@ -838,6 +838,8 @@ void KrakenKlipperAudioProcessorEditor::applyPreset(int preset)
     setPluginParameter("mix", values.mix);
     setPluginParameter("output", values.output);
     setPluginParameter("character", values.character);
+    setPluginParameter("bypass", 0.0f);
+    setPluginParameter("delta", 0.0f);
 }
 
 void KrakenKlipperAudioProcessorEditor::saveUserPreset()
