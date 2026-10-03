@@ -195,16 +195,41 @@ int main()
         return EXIT_FAILURE;
 
     // Open, draw, resize and close the real editor, including embedded artwork.
-    for (int pass = 0; pass < 3; ++pass)
+    for (int pass = 0; pass < 6; ++pass)
     {
         std::unique_ptr<juce::AudioProcessorEditor> editor(restored.createEditor());
         if (!editor) return fail("Editor did not open.");
-        editor->setSize(pass == 1 ? 1350 : 1000, pass == 1 ? 1040 : 790);
+        if (editor->getWidth() != 800 || editor->getHeight() != 480)
+            return fail("Editor did not open at the compact default size.");
+        const std::array<juce::Point<int>, 6> sizes{{{800, 480}, {700, 420}, {1400, 1000},
+                                                   {800, 420}, {700, 800}, {1100, 660}}};
+        editor->setSize(sizes[static_cast<size_t>(pass)].x, sizes[static_cast<size_t>(pass)].y);
+        // Check the transformed canvas and every direct control remain visible.
+        juce::Component* canvas = nullptr;
+        for (int child = 0; child < editor->getNumChildComponents(); ++child)
+            if (editor->getChildComponent(child)->getNumChildComponents() > 5)
+                canvas = editor->getChildComponent(child);
+        if (!canvas || !editor->getLocalBounds().expanded(1).contains(canvas->getBoundsInParent()))
+            return fail("Compact canvas extended outside the editor.");
+        for (int child = 0; child < canvas->getNumChildComponents(); ++child)
+            if (!canvas->getLocalBounds().contains(canvas->getChildComponent(child)->getBounds()))
+                return fail("A control was clipped by the compact layout.");
+        for (int child = 0; child < canvas->getNumChildComponents(); ++child)
+        {
+            auto* control = canvas->getChildComponent(child);
+            if (dynamic_cast<juce::Button*>(control) == nullptr) continue;
+            const auto hitPoint = editor->getLocalPoint(control, control->getLocalBounds().getCentre());
+            auto* hit = editor->getComponentAt(hitPoint);
+            if (hit != control && !control->isParentOf(hit))
+                return fail("Scaled button mouse targets did not match their artwork.");
+        }
         const auto snapshot = editor->createComponentSnapshot(editor->getLocalBounds());
         if (!snapshot.isValid()) return fail("Editor did not render.");
-        if (pass == 0)
+        if (pass == 0 || pass == 1 || pass == 3 || pass == 4)
         {
-            juce::File output = juce::File::getCurrentWorkingDirectory().getChildFile("Double-Cup-Clipper-UI.png");
+            const auto filename = pass == 0 ? juce::String("Double-Cup-Clipper-UI.png")
+                : juce::String("Double-Cup-Clipper-Resize-") + juce::String(pass) + ".png";
+            juce::File output = juce::File::getCurrentWorkingDirectory().getChildFile(filename);
             juce::FileOutputStream stream(output);
             juce::PNGImageFormat png;
             if (!stream.openedOk() || !png.writeImageToStream(snapshot, stream))
