@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <array>
+#include <vector>
 
 namespace
 {
@@ -40,6 +42,7 @@ bool runLayout(const juce::AudioChannelSet& layout, int channelCount)
         return false;
     }
 
+    std::array<std::vector<float>, 3> renderedModes;
     for (int character = 0; character != 3; ++character)
     {
         setParameter(processor, "character", static_cast<float>(character));
@@ -62,6 +65,8 @@ bool runLayout(const juce::AudioChannelSet& layout, int channelCount)
         processor.processBlock(audio, midi);
 
         float peak = 0.0f;
+        auto& rendered = renderedModes[static_cast<size_t>(character)];
+        rendered.resize(static_cast<size_t>(hostBlock));
         for (int channel = 0; channel < channelCount; ++channel)
             for (int i = 0; i < hostBlock; ++i)
             {
@@ -72,11 +77,32 @@ bool runLayout(const juce::AudioChannelSet& layout, int channelCount)
                     return false;
                 }
                 peak = juce::jmax(peak, std::abs(sample));
+                if (channel == 0)
+                    rendered[static_cast<size_t>(i)] = sample;
             }
 
         if (peak < 1.0e-4f)
         {
             std::cerr << "Processor output was unexpectedly silent.\n";
+            return false;
+        }
+    }
+
+    for (size_t mode = 1; mode < renderedModes.size(); ++mode)
+    {
+        double squaredDifference = 0.0;
+        const auto comparisonStart = static_cast<size_t>(hostBlock * 3 / 4);
+        for (auto i = comparisonStart; i < static_cast<size_t>(hostBlock); ++i)
+        {
+            const auto difference = static_cast<double>(renderedModes[mode][i]
+                                                        - renderedModes[mode - 1][i]);
+            squaredDifference += difference * difference;
+        }
+        const auto comparedSamples = static_cast<double>(hostBlock) - static_cast<double>(comparisonStart);
+        const auto differenceRms = std::sqrt(squaredDifference / comparedSamples);
+        if (differenceRms < 1.0e-4)
+        {
+            fail("Soft, Medium, and Hard modes did not produce distinct audio.");
             return false;
         }
     }
@@ -102,6 +128,28 @@ bool runLayout(const juce::AudioChannelSet& layout, int channelCount)
 
 int main()
 {
+    // Both host sessions and .dcpreset files use this same parameter state.
+    KrakenKlipperAudioProcessor original;
+    setParameter(original, "drive", 11.0f);
+    setParameter(original, "ceiling", -6.0f);
+    setParameter(original, "knee", 21.0f);
+    setParameter(original, "character", 0.0f);
+    setParameter(original, "mix", 73.0f);
+    setParameter(original, "output", -4.0f);
+    juce::MemoryBlock saved;
+    original.getStateInformation(saved);
+    KrakenKlipperAudioProcessor restored;
+    restored.setStateInformation(saved.getData(), static_cast<int>(saved.getSize()));
+    for (const auto* id : {"drive", "ceiling", "knee", "character", "mix", "output", "bypass", "delta"})
+        if (std::abs(original.parameters.getRawParameterValue(id)->load()
+                     - restored.parameters.getRawParameterValue(id)->load()) > 0.001f)
+            return fail("Saved settings did not restore correctly.");
+    auto presetXml = original.parameters.copyState().createXml();
+    auto parsedXml = juce::XmlDocument::parse(presetXml->toString());
+    restored.parameters.replaceState(juce::ValueTree::fromXml(*parsedXml));
+    if (std::abs(restored.parameters.getRawParameterValue("knee")->load() - 21.0f) > 0.001f)
+        return fail("Preset XML did not restore the knee.");
+
     if (!runLayout(juce::AudioChannelSet::mono(), 1))
         return EXIT_FAILURE;
     if (!runLayout(juce::AudioChannelSet::stereo(), 2))

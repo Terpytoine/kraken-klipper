@@ -48,13 +48,20 @@ int main()
     constexpr auto ceiling = 1.0f;
     constexpr auto kneeRatio = 0.25f;
     constexpr auto start = ceiling * kneeRatio;
+    constexpr auto softSpanMultiplier = 2.6f;
+    constexpr auto softEnd = start + (ceiling - start) * softSpanMultiplier;
     constexpr auto epsilon = 0.0001f;
     const auto slopeAtStart = (kraken::softKnee(start + epsilon, ceiling, kneeRatio) - start) / epsilon;
-    const auto slopeAtCeiling = (ceiling - kraken::softKnee(ceiling - epsilon, ceiling, kneeRatio)) / epsilon;
+    const auto slopeAtEnd = (ceiling - kraken::softKnee(softEnd - epsilon, ceiling, kneeRatio)) / epsilon;
     if (!near(slopeAtStart, 1.0f, 0.002f)) return fail("soft knee was not tangent at its start");
-    if (slopeAtCeiling > 0.002f) return fail("soft knee did not flatten at its ceiling");
+    if (slopeAtEnd > 0.002f) return fail("soft knee did not flatten at the end of its shoulder");
     if (!near(kraken::softKnee(0.20f, ceiling, kneeRatio), 0.20f, 1.0e-6f))
         return fail("signal below the knee was not unchanged");
+    if (!(kraken::clipBlend(ceiling, ceiling, kneeRatio, 0.0f)
+          < kraken::clipBlend(ceiling, ceiling, kneeRatio, 1.0f)
+          && kraken::clipBlend(ceiling, ceiling, kneeRatio, 1.0f)
+          < kraken::clipBlend(ceiling, ceiling, kneeRatio, 2.0f)))
+        return fail("Soft, Medium, and Hard did not produce distinct curves at the threshold");
     if (!near(kraken::hardClip(3.0f, ceiling), ceiling, 1.0e-6f))
         return fail("hard clip did not land on the ceiling");
     if (kraken::softKnee(std::numeric_limits<float>::quiet_NaN(), ceiling, kneeRatio) != 0.0f
