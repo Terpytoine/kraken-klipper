@@ -1,4 +1,4 @@
-﻿#include "PluginEditor.h"
+#include "PluginEditor.h"
 #include "ClipperCurve.h"
 #include "BinaryData.h"
 #include <array>
@@ -99,8 +99,8 @@ public:
 
     juce::Font getTextButtonFont(juce::TextButton&, int height) override
     {
-        return juce::Font(juce::FontOptions("Impact", juce::jlimit(11.0f, 16.0f, height * 0.33f),
-                                            juce::Font::bold | juce::Font::italic)
+        return juce::Font(juce::FontOptions("Arial", juce::jlimit(11.0f, 16.0f, height * 0.40f),
+                                            juce::Font::bold)
                               .withFallbacks({"Arial Black", "Arial"}));
     }
 };
@@ -516,7 +516,7 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
         if (selectedPreset > 1)
         {
             applyPreset(selectedPreset);
-            presetStatusLabel.setText("STARTING POINT LOADED  •  TWEAK IT YOUR WAY", juce::dontSendNotification);
+            presetStatusLabel.setText("STARTING POINT LOADED  |  TWEAK IT YOUR WAY", juce::dontSendNotification);
             presetSelector.setSelectedId(1, juce::dontSendNotification);
         }
     };
@@ -534,11 +534,11 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     loadPresetButton.onClick = [this] { loadUserPreset(); };
 
     addAndMakeVisible(presetStatusLabel);
-    presetStatusLabel.setText("HELLA SAUCE  •  YOUR SOUND, YOUR CALL", juce::dontSendNotification);
+    presetStatusLabel.setText("HELLA SAUCE  |  YOUR SOUND, YOUR CALL", juce::dontSendNotification);
     presetStatusLabel.setJustificationType(juce::Justification::centredLeft);
     presetStatusLabel.setColour(juce::Label::textColourId, violet.withAlpha(0.9f));
-    presetStatusLabel.setFont(juce::Font(juce::FontOptions("Impact", 10.0f,
-                                                           juce::Font::bold | juce::Font::italic)
+    presetStatusLabel.setFont(juce::Font(juce::FontOptions("Arial", 10.0f,
+                                                           juce::Font::bold)
                                               .withFallbacks({"Arial Black", "Arial"})));
 
     driveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.parameters, "drive", driveSlider);
@@ -585,8 +585,8 @@ void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::
     label.setText(name, juce::dontSendNotification);
     label.setJustificationType(juce::Justification::centred);
     label.setColour(juce::Label::textColourId, paper);
-    label.setFont(juce::Font(juce::FontOptions("Impact", 12.0f,
-                                               juce::Font::bold | juce::Font::italic)
+    label.setFont(juce::Font(juce::FontOptions("Arial", 12.0f,
+                                               juce::Font::bold)
                                   .withFallbacks({"Arial Black", "Arial"})));
     label.attachToComponent(&slider, false);
 }
@@ -631,7 +631,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
                                             19.0f, 42.0f));
     g.setColour(paper);
     g.setFont(juce::Font(juce::FontOptions("Impact", 15.0f,
-                                           juce::Font::bold | juce::Font::italic)
+                                           juce::Font::plain)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.drawText("TODB", juce::Rectangle<int>(static_cast<int>(logoTile.getX() + 27.0f),
                                               static_cast<int>(logoTile.getY() + 15.0f), 45, 35),
@@ -644,7 +644,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     const auto titleSize = juce::jlimit(24.0f, 29.0f, 25.0f + (getWidth() - 900) * 0.025f);
     const auto titleBounds = juce::Rectangle<int>(112, 17, titleWidth, 39);
     g.setFont(juce::Font(juce::FontOptions("Impact", titleSize,
-                                           juce::Font::bold | juce::Font::italic)
+                                           juce::Font::plain)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.setColour(juce::Colour(0xff3e1a5c));
     g.drawText(title, titleBounds.translated(2, 3), juce::Justification::centredLeft);
@@ -653,14 +653,14 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(paper);
     g.drawText(title, titleBounds, juce::Justification::centredLeft);
     g.setColour(violet);
-    g.setFont(juce::Font(juce::FontOptions("Impact", 12.0f,
-                                           juce::Font::bold | juce::Font::italic)
+    g.setFont(juce::Font(juce::FontOptions("Arial", 12.0f,
+                                           juce::Font::bold)
                              .withFallbacks({"Arial Black", "Arial"})));
-    g.drawText("TODB  •  TWON ON DA BEAT  •  HELLA SAUCE", 115, 56, 420, 19,
+    g.drawText("TODB  |  TWON ON DA BEAT  |  HELLA SAUCE", 115, 56, 420, 19,
                juce::Justification::centredLeft);
     g.setColour(muted);
     g.setFont(juce::Font(juce::FontOptions(10.0f, juce::Font::bold)));
-    g.drawText("THE YAY AREA  •  BAY BRIDGE  •  510 / 415 / 707", 115, 75, 440, 16,
+    g.drawText("THE YAY AREA  |  BAY BRIDGE  |  510 / 415 / 707", 115, 75, 440, 16,
                juce::Justification::centredLeft);
 
     g.setColour(gold.withAlpha(0.92f));
@@ -670,8 +670,8 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawText("AUTO CHANNELS: MONO / STEREO", getWidth() - 220, 43, 190, 15,
                juce::Justification::centredRight);
     g.setColour(violet);
-    g.setFont(juce::Font(juce::FontOptions("Impact", 11.0f,
-                                           juce::Font::bold | juce::Font::italic)
+    g.setFont(juce::Font(juce::FontOptions("Arial", 11.0f,
+                                           juce::Font::bold)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.drawText("YADADAMEAN?", getWidth() - 180, 65, 150, 14,
                juce::Justification::centredRight);
@@ -692,8 +692,8 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawRoundedRectangle(modeCard, 10.0f, 1.0f);
 
     g.setColour(muted);
-    g.setFont(juce::Font(juce::FontOptions("Impact", 11.0f,
-                                           juce::Font::bold | juce::Font::italic)
+    g.setFont(juce::Font(juce::FontOptions("Arial", 11.0f,
+                                           juce::Font::bold)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.drawText("CLIP STYLE  /  PICK YOUR SAUCE", 42, 131, 245, 16,
                juce::Justification::centredLeft);
@@ -741,14 +741,14 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
                                            static_cast<int>(tagFrame.getY() + 3.0f), 100, 92);
     g.setColour(paper);
     g.setFont(juce::Font(juce::FontOptions("Impact", 15.0f,
-                                           juce::Font::bold | juce::Font::italic)
+                                           juce::Font::plain)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.drawText("THE YAY", tagCaption.removeFromTop(24), juce::Justification::centredLeft);
     g.setColour(violet);
     g.drawText("HELLA SAUCE", tagCaption.removeFromTop(23), juce::Justification::centredLeft);
     g.setColour(muted);
-    g.setFont(juce::Font(juce::FontOptions("Impact", 9.0f,
-                                           juce::Font::bold | juce::Font::italic)
+    g.setFont(juce::Font(juce::FontOptions("Arial", 9.0f,
+                                           juce::Font::bold)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.drawText("510  /  415  /  707", tagCaption.removeFromTop(18), juce::Justification::centredLeft);
     g.drawText("YADADAMEAN?", tagCaption, juce::Justification::centredLeft);
@@ -761,7 +761,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawLine(0.0f, footer.getY(), footer.getRight(), footer.getY(), 0.8f);
     g.setColour(muted);
     g.setFont(juce::Font(juce::FontOptions(9.0f, juce::Font::bold)));
-    g.drawText("TODB  /  TWON ON DA BEAT   •   HELLA SAUCE  •  8X REAL-TIME OVERSAMPLING",
+    g.drawText("TODB  /  TWON ON DA BEAT   |   HELLA SAUCE  |  8X REAL-TIME OVERSAMPLING",
                footer.toNearestInt().reduced(20, 0), juce::Justification::centredLeft);
 }
 
@@ -879,7 +879,7 @@ void KrakenKlipperAudioProcessorEditor::saveUserPreset()
             if (auto xml = safeThis->processor.parameters.copyState().createXml())
             {
                 if (outputFile.replaceWithText(xml->toString()))
-                    safeThis->presetStatusLabel.setText("SAVED  •  " + outputFile.getFileName(),
+                    safeThis->presetStatusLabel.setText("SAVED  |  " + outputFile.getFileName(),
                                                         juce::dontSendNotification);
                 else
                     safeThis->presetStatusLabel.setText("COULDN'T WRITE THAT PRESET FILE",
@@ -927,7 +927,7 @@ void KrakenKlipperAudioProcessorEditor::loadUserPreset()
                 auto state = juce::ValueTree::fromXml(*xml);
                 safeThis->processor.parameters.replaceState(state);
                 safeThis->presetSelector.setSelectedId(1, juce::dontSendNotification);
-                safeThis->presetStatusLabel.setText("PRESET LOADED  •  YADADAMEAN?",
+                safeThis->presetStatusLabel.setText("PRESET LOADED  |  YADADAMEAN?",
                                                     juce::dontSendNotification);
             }
         });
