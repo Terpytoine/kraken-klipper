@@ -61,6 +61,6 @@ int main()
         || kraken::hardClip(std::numeric_limits<float>::infinity(), ceiling) != 0.0f)
         return fail("non-finite audio was not safely cleared");
 
-    std::cout << "KRAKEN KLIPPER transfer curve checks passed.\n";
+    std::cout << "Double Cup Clipper transfer curve checks passed.\n";
     return EXIT_SUCCESS;
 }
