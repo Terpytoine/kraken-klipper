@@ -35,7 +35,7 @@ jobs:
       - name: Upload installer and matching source
         uses: actions/upload-artifact@v4
         with:
-          name: DOUBLE-CUP-CLIPPER-v1.0.2-Windows-Installer
+          name: DOUBLE-CUP-CLIPPER-v1.0.3-Windows-Installer
           path: |
             dist/*.exe
             dist/*Source*.zip
