@@ -29,6 +29,11 @@ private:
 
     KrakenKlipperAudioProcessor& processor;
     std::unique_ptr<juce::LookAndFeel_V4> customLookAndFeel;
+    // One logical canvas keeps painting, controls and mouse hit targets aligned.
+    juce::Component contentCanvas;
+    juce::AffineTransform contentTransform;
+    static constexpr int designWidth = 1120;
+    static constexpr int designHeight = 672;
 
     juce::Slider driveSlider, ceilingSlider, kneeSlider, mixSlider, outputSlider;
     juce::Label driveLabel, ceilingLabel, kneeLabel, mixLabel, outputLabel;

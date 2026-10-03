@@ -419,10 +419,11 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
       headerArtwork(juce::ImageCache::getFromMemory(BinaryData::DoubleCupHeader_png, BinaryData::DoubleCupHeader_pngSize)),
       todbTag(juce::ImageCache::getFromMemory(BinaryData::TODBTag_jpg, BinaryData::TODBTag_jpgSize))
 {
-    setSize(1120, 790);
+    addAndMakeVisible(contentCanvas);
+    contentCanvas.setInterceptsMouseClicks(false, true);
     tooltips.setLookAndFeel(customLookAndFeel.get());
     setResizable(true, true);
-    setResizeLimits(900, 790, 1350, 1040);
+    setResizeLimits(700, 420, 1400, 1000);
 
     styleSlider(driveSlider, driveLabel, "DRIVE");
     styleSlider(ceilingSlider, ceilingLabel, "CEILING");
@@ -452,7 +453,7 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
                          static_cast<juce::Button*>(&mediumButton),
                          static_cast<juce::Button*>(&hardButton)})
     {
-        addAndMakeVisible(button);
+        contentCanvas.addAndMakeVisible(button);
         button->setLookAndFeel(customLookAndFeel.get());
         button->setClickingTogglesState(true);
         button->setRadioGroupId(9102);
@@ -467,7 +468,7 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     for (auto* button : {static_cast<juce::Button*>(&bypassButton),
                          static_cast<juce::Button*>(&deltaButton)})
     {
-        addAndMakeVisible(button);
+        contentCanvas.addAndMakeVisible(button);
         button->setLookAndFeel(customLookAndFeel.get());
         button->setClickingTogglesState(true);
         button->setColour(juce::ToggleButton::textColourId, paper);
@@ -500,12 +501,12 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
             presetSelector.setSelectedId(1, juce::dontSendNotification);
         }
     };
-    addAndMakeVisible(presetSelector);
+    contentCanvas.addAndMakeVisible(presetSelector);
 
     for (auto* button : {static_cast<juce::Button*>(&savePresetButton),
                          static_cast<juce::Button*>(&loadPresetButton)})
     {
-        addAndMakeVisible(button);
+        contentCanvas.addAndMakeVisible(button);
         button->setLookAndFeel(customLookAndFeel.get());
     }
     savePresetButton.setTooltip("Save all current settings to a .dcpreset file in Documents\\TODB\\Double Cup Clipper\\Presets.");
@@ -513,7 +514,7 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     savePresetButton.onClick = [this] { syrupEnergy = 1.0f; saveUserPreset(); };
     loadPresetButton.onClick = [this] { syrupEnergy = 1.0f; loadUserPreset(); };
 
-    addAndMakeVisible(presetStatusLabel);
+    contentCanvas.addAndMakeVisible(presetStatusLabel);
     presetStatusLabel.setText("HELLA SAUCE  |  YOUR SOUND, YOUR CALL", juce::dontSendNotification);
     presetStatusLabel.setJustificationType(juce::Justification::centredLeft);
     presetStatusLabel.setColour(juce::Label::textColourId, violet.withAlpha(0.9f));
@@ -527,10 +528,11 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     mixAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.parameters, "mix", mixSlider);
     outputAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.parameters, "output", outputSlider);
 
-    addAndMakeVisible(curveDisplay.get());
-    addAndMakeVisible(meterDisplay.get());
+    contentCanvas.addAndMakeVisible(curveDisplay.get());
+    contentCanvas.addAndMakeVisible(meterDisplay.get());
     curveDisplay->setTooltip("Horizontal axis: signal before Drive. Vertical axis: output. 1.0 is 0 dBFS. The bright curve shows the processed signal; the dashed diagonal is the unprocessed signal. A flatter top means more clipping. Bypass passes the input; Delta plays only what changed.");
     meterDisplay->setTooltip("Input and Output show sample peaks in dBFS. A red Output bar means the signal is above 0 dBFS and may clip in a later plug-in or output. Reduction shows how much level the clipping curve removes.");
+    setSize(800, 480);
     timerCallback();
     startTimerHz(30);
 }
@@ -555,7 +557,7 @@ KrakenKlipperAudioProcessorEditor::~KrakenKlipperAudioProcessorEditor()
 void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::Label& label,
                                                       const juce::String& name)
 {
-    addAndMakeVisible(slider);
+    contentCanvas.addAndMakeVisible(slider);
     slider.setLookAndFeel(customLookAndFeel.get());
     slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 88, 23);
@@ -563,7 +565,7 @@ void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::
     slider.setColour(juce::Slider::thumbColourId, gold);
     slider.setColour(juce::Slider::rotarySliderFillColourId, purple);
     slider.setColour(juce::Slider::rotarySliderOutlineColourId, panelEdge);
-    addAndMakeVisible(label);
+    contentCanvas.addAndMakeVisible(label);
     label.setText(name, juce::dontSendNotification);
     label.setJustificationType(juce::Justification::centred);
     label.setColour(juce::Label::textColourId, paper);
@@ -575,35 +577,36 @@ void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::
 
 void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    const auto width = static_cast<float>(getWidth());
+    const auto width = static_cast<float>(designWidth);
     g.fillAll(ink);
+    g.addTransform(contentTransform);
     if (scaledPool.isValid())
         g.drawImageAt(scaledPool, 0, 0);
 
     // The entire shell is a double foam-cup rim with glossy purple liquid.
     g.setColour(juce::Colour(0xff1b0630).withAlpha(0.30f));
-    g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(25.0f, 10.0f), 36.0f);
+    g.fillRoundedRectangle(juce::Rectangle<float>(0, 0, designWidth, designHeight).reduced(25.0f, 10.0f), 36.0f);
     g.setOpacity(1.0f);
     if (scaledHeader.isValid())
         g.drawImageAt(scaledHeader, 18, 0);
-    const auto headerInfo = juce::Rectangle<float>(width - 226.0f, 47.0f, 204.0f, 151.0f);
+    const auto headerInfo = juce::Rectangle<float>(width - 226.0f, 6.0f, 204.0f, 117.0f);
     g.setColour(juce::Colour(0xff1d082e).withAlpha(0.92f));
     g.fillRoundedRectangle(headerInfo, 14.0f);
     g.setColour(gold.withAlpha(0.58f));
     g.drawRoundedRectangle(headerInfo, 14.0f, 1.0f);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 12.0f, juce::Font::bold)));
     g.setColour(gold);
-    g.drawText("TODB / THE BAY", getWidth() - 214, 60, 177, 25, juce::Justification::centredRight);
+    g.drawText("TODB / THE BAY", designWidth - 214, 12, 177, 25, juce::Justification::centredRight);
     g.setColour(paper);
-    g.drawText("8X OVERSAMPLING", getWidth() - 214, 92, 177, 18, juce::Justification::centredRight);
+    g.drawText("8X OVERSAMPLING", designWidth - 214, 36, 177, 18, juce::Justification::centredRight);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 10.0f, juce::Font::bold)));
-    g.drawText("AUTO MONO / STEREO", getWidth() - 214, 117, 177, 18, juce::Justification::centredRight);
+    g.drawText("AUTO MONO / STEREO", designWidth - 214, 57, 177, 18, juce::Justification::centredRight);
     g.setColour(gold);
-    g.drawText("510 / 415 / 707", getWidth() - 214, 145, 177, 18, juce::Justification::centredRight);
+    g.drawText("510 / 415 / 707", designWidth - 214, 78, 177, 18, juce::Justification::centredRight);
     g.setColour(violet);
-    g.drawText("HELLA SAUCE. YADADAMEAN?", getWidth() - 224, 172, 187, 18, juce::Justification::centredRight);
+    g.drawText("HELLA SAUCE. YADADAMEAN?", designWidth - 224, 99, 187, 18, juce::Justification::centredRight);
 
-    const auto controls = juce::Rectangle<float>(22.0f, 253.0f, width - 44.0f, 258.0f);
+    const auto controls = juce::Rectangle<float>(22.0f, 135.0f, width - 44.0f, 258.0f);
     g.setGradientFill(juce::ColourGradient(juce::Colour(0xff35124f).withAlpha(0.92f), controls.getTopLeft(),
                                           juce::Colour(0xff15081f).withAlpha(0.95f), controls.getBottomRight(), false));
     g.fillRoundedRectangle(controls, 20.0f);
@@ -641,26 +644,26 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
         }
         g.restoreState();
     }
-    const auto modeCard = juce::Rectangle<float>(38.0f, 265.0f, 365.0f, 60.0f);
+    const auto modeCard = juce::Rectangle<float>(38.0f, 147.0f, 365.0f, 60.0f);
     g.setColour(ink.withAlpha(0.85f));
     g.fillRoundedRectangle(modeCard, 10.0f);
     g.setColour(gold.withAlpha(0.45f));
     g.drawRoundedRectangle(modeCard, 10.0f, 1.0f);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 11.0f, juce::Font::bold)));
     g.setColour(gold);
-    g.drawText("CLIP STYLE / PICK YOUR SAUCE", 42, 271, 265, 16, juce::Justification::centredLeft);
+    g.drawText("CLIP STYLE / PICK YOUR SAUCE", 42, 153, 265, 16, juce::Justification::centredLeft);
 
-    const auto controlW = (getWidth() - 120) / 5;
+    const auto controlW = (designWidth - 120) / 5;
     const std::array<juce::String, 5> hints{{"PUSH INTO THE CLIP", "TOP LIMIT", "ROUND THE EDGE",
                                             "DRY / WET BLEND", "AFTER THE CLIP"}};
     g.setColour(paper);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 9.0f, juce::Font::bold)));
     for (int i = 0; i < 5; ++i)
-        g.drawText(hints[static_cast<size_t>(i)], 56 + i * controlW, 491, controlW - 2, 13,
+        g.drawText(hints[static_cast<size_t>(i)], 56 + i * controlW, 373, controlW - 2, 13,
                    juce::Justification::centred);
 
-    const auto lowerY = 522.0f;
-    const auto lowerHeight = static_cast<float>(getHeight() - 555);
+    const auto lowerY = 404.0f;
+    const auto lowerHeight = static_cast<float>(designHeight - 437);
     for (const auto card : {juce::Rectangle<float>(45.0f, lowerY, width - 426.0f, lowerHeight),
                            juce::Rectangle<float>(width - 366.0f, lowerY, 334.0f, lowerHeight)})
     {
@@ -669,7 +672,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
         g.setColour(gold.withAlpha(0.58f));
         g.drawRoundedRectangle(card, 16.0f, 1.2f);
     }
-    const auto tagFrame = juce::Rectangle<float>(width - 253.0f, static_cast<float>(getHeight() - 140), 221.0f, 98.0f);
+    const auto tagFrame = juce::Rectangle<float>(width - 253.0f, static_cast<float>(designHeight - 140), 221.0f, 98.0f);
     g.setColour(ink);
     g.fillRoundedRectangle(tagFrame, 7.0f);
     if (todbTag.isValid())
@@ -683,8 +686,8 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     }
     g.setColour(gold);
     g.drawRoundedRectangle(tagFrame, 7.0f, 1.2f);
-    const auto tagX = getWidth() - 354;
-    const auto tagY = getHeight() - 134;
+    const auto tagX = designWidth - 354;
+    const auto tagY = designHeight - 134;
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 13.0f, juce::Font::bold)));
     g.drawText("THE BAY", tagX, tagY, 94, 20, juce::Justification::centredLeft);
     g.setColour(violet);
@@ -693,7 +696,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 9.0f, juce::Font::bold)));
     g.drawText("510 / 415 / 707", tagX, tagY + 51, 94, 18, juce::Justification::centredLeft);
     g.drawText("TWON ON DA BEAT", tagX, tagY + 72, 94, 15, juce::Justification::centredLeft);
-    const auto footer = juce::Rectangle<int>(24, getHeight() - 24, getWidth() - 48, 20);
+    const auto footer = juce::Rectangle<int>(24, designHeight - 24, designWidth - 48, 20);
     g.setColour(ink.withAlpha(0.9f));
     g.fillRoundedRectangle(footer.toFloat(), 5.0f);
     g.setColour(gold);
@@ -703,34 +706,41 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
 
 void KrakenKlipperAudioProcessorEditor::resized()
 {
-    const auto width = getWidth();
-    // Resample high-resolution art once per resize, rather than on every animated frame.
-    if (panelMural.isValid() && width > 0 && getHeight() > 0)
+    const auto width = designWidth;
+    const auto scale = juce::jmin(static_cast<float>(getWidth()) / designWidth,
+                                 static_cast<float>(getHeight()) / designHeight);
+    const auto offsetX = (getWidth() - designWidth * scale) * 0.5f;
+    const auto offsetY = (getHeight() - designHeight * scale) * 0.5f;
+    contentTransform = juce::AffineTransform::scale(scale).translated(offsetX, offsetY);
+    contentCanvas.setBounds(0, 0, designWidth, designHeight);
+    contentCanvas.setTransform(contentTransform);
+    // Cache logical-resolution art once; live resizing only changes the canvas transform.
+    if (panelMural.isValid() && !scaledPool.isValid())
     {
-        scaledPool = juce::Image(juce::Image::RGB, width, getHeight(), true);
+        scaledPool = juce::Image(juce::Image::RGB, width, designHeight, true);
         juce::Graphics poolGraphics(scaledPool);
-        poolGraphics.drawImageWithin(panelMural, 0, 0, width, getHeight(), juce::RectanglePlacement::stretchToFit);
+        poolGraphics.drawImageWithin(panelMural, 0, 0, width, designHeight, juce::RectanglePlacement::stretchToFit);
     }
-    if (headerArtwork.isValid() && width > 238)
+    if (headerArtwork.isValid() && !scaledHeader.isValid())
     {
-        scaledHeader = juce::Image(juce::Image::ARGB, width - 238, 238, true);
+        scaledHeader = juce::Image(juce::Image::ARGB, width - 238, 120, true);
         juce::Graphics headerGraphics(scaledHeader);
-        headerGraphics.drawImageWithin(headerArtwork, 0, 0, width - 238, 238,
+        headerGraphics.drawImageWithin(headerArtwork, 0, 0, width - 238, 120,
                                         juce::RectanglePlacement::xLeft | juce::RectanglePlacement::yMid);
     }
-    softButton.setBounds(47, 293, 103, 31);
-    mediumButton.setBounds(158, 293, 112, 31);
-    hardButton.setBounds(278, 293, 112, 31);
-    bypassButton.setBounds(width - 420, 266, 105, 37);
-    deltaButton.setBounds(width - 300, 266, 94, 37);
-    presetSelector.setBounds(width - 196, 266, 163, 34);
-    savePresetButton.setBounds(width - 196, 304, 78, 22);
-    loadPresetButton.setBounds(width - 113, 304, 80, 22);
-    presetStatusLabel.setBounds(412, 304, width - 620, 22);
+    softButton.setBounds(47, 175, 103, 31);
+    mediumButton.setBounds(158, 175, 112, 31);
+    hardButton.setBounds(278, 175, 112, 31);
+    bypassButton.setBounds(width - 420, 148, 105, 37);
+    deltaButton.setBounds(width - 300, 148, 94, 37);
+    presetSelector.setBounds(width - 196, 148, 163, 34);
+    savePresetButton.setBounds(width - 196, 186, 78, 22);
+    loadPresetButton.setBounds(width - 113, 186, 80, 22);
+    presetStatusLabel.setBounds(412, 186, width - 620, 22);
 
     const auto controlW = (width - 120) / 5;
     const auto firstX = 56;
-    const auto y = 344;
+    const auto y = 226;
     const auto h = 146;
     auto place = [&](juce::Slider& slider, int index)
     {
@@ -742,8 +752,8 @@ void KrakenKlipperAudioProcessorEditor::resized()
     place(mixSlider, 3);
     place(outputSlider, 4);
 
-    curveDisplay->setBounds(62, 537, width - 450, getHeight() - 595);
-    meterDisplay->setBounds(width - 354, 537, 322, 112);
+    curveDisplay->setBounds(62, 419, width - 450, designHeight - 477);
+    meterDisplay->setBounds(width - 354, 419, 322, 112);
 }
 
 void KrakenKlipperAudioProcessorEditor::timerCallback()
