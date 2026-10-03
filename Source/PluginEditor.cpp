@@ -1,5 +1,6 @@
-#include "PluginEditor.h"
+﻿#include "PluginEditor.h"
 #include "ClipperCurve.h"
+#include "BinaryData.h"
 #include <array>
 
 namespace
@@ -9,7 +10,7 @@ const juce::Colour panel{0xff151023};
 const juce::Colour panelEdge{0xff3c2a56};
 const juce::Colour purple{0xff9d54ed};
 const juce::Colour violet{0xffc488ff};
-const juce::Colour gold{0xffded0f0};
+const juce::Colour gold{0xfff0eaff};
 const juce::Colour paper{0xfff0eaf7};
 const juce::Colour muted{0xffaaa0ba};
 
@@ -98,8 +99,9 @@ public:
 
     juce::Font getTextButtonFont(juce::TextButton&, int height) override
     {
-        return juce::Font(juce::FontOptions(juce::jlimit(11.0f, 16.0f, height * 0.33f),
-                                            juce::Font::bold));
+        return juce::Font(juce::FontOptions("Impact", juce::jlimit(11.0f, 16.0f, height * 0.33f),
+                                            juce::Font::bold | juce::Font::italic)
+                              .withFallbacks({"Arial Black", "Arial"}));
     }
 };
 
@@ -154,6 +156,34 @@ void drawDoubleCupMark(juce::Graphics& g, juce::Rectangle<float> area)
              cupWidth, cupHeight}, true);
     drawCup({area.getX() + area.getWidth() * 0.46f, area.getY() + area.getHeight() * 0.20f,
              cupWidth, cupHeight}, false);
+
+    juce::Path splash;
+    splash.startNewSubPath(area.getX() + area.getWidth() * 0.49f,
+                           area.getY() + area.getHeight() * 0.40f);
+    splash.cubicTo(area.getX() + area.getWidth() * 0.36f, area.getY() + area.getHeight() * 0.25f,
+                   area.getX() + area.getWidth() * 0.22f, area.getY() + area.getHeight() * 0.14f,
+                   area.getX() + area.getWidth() * 0.15f, area.getY() + area.getHeight() * 0.25f);
+    splash.cubicTo(area.getX() + area.getWidth() * 0.10f, area.getY() + area.getHeight() * 0.34f,
+                   area.getX() + area.getWidth() * 0.24f, area.getY() + area.getHeight() * 0.38f,
+                   area.getX() + area.getWidth() * 0.31f, area.getY() + area.getHeight() * 0.47f);
+    splash.cubicTo(area.getX() + area.getWidth() * 0.18f, area.getY() + area.getHeight() * 0.52f,
+                   area.getX() + area.getWidth() * 0.20f, area.getY() + area.getHeight() * 0.65f,
+                   area.getX() + area.getWidth() * 0.31f, area.getY() + area.getHeight() * 0.60f);
+    splash.cubicTo(area.getX() + area.getWidth() * 0.37f, area.getY() + area.getHeight() * 0.57f,
+                   area.getX() + area.getWidth() * 0.40f, area.getY() + area.getHeight() * 0.49f,
+                   area.getX() + area.getWidth() * 0.49f, area.getY() + area.getHeight() * 0.48f);
+    splash.closeSubPath();
+    g.setColour(purple.withAlpha(0.94f));
+    g.fillPath(splash);
+    g.setColour(violet.withAlpha(0.9f));
+    g.strokePath(splash, juce::PathStrokeType(1.0f));
+    for (auto drop : {juce::Point<float>{0.17f, 0.22f}, {0.10f, 0.53f}, {0.24f, 0.70f}})
+    {
+        const auto x = area.getX() + area.getWidth() * drop.x;
+        const auto y = area.getY() + area.getHeight() * drop.y;
+        g.setColour(violet.withAlpha(0.88f));
+        g.fillEllipse(x - 1.6f, y - 1.6f, 3.2f, 3.2f);
+    }
 }
 
 void drawSprayPaint(juce::Graphics& g, juce::Rectangle<float> area)
@@ -242,79 +272,6 @@ void drawBayBridge(juce::Graphics& g, juce::Rectangle<float> area)
     }
 }
 
-void drawKraken(juce::Graphics& g, juce::Rectangle<float> area)
-{
-    const auto cx = area.getCentreX();
-    const auto cy = area.getCentreY();
-    const auto scale = juce::jmin(area.getWidth(), area.getHeight()) / 270.0f;
-    const auto inkPurple = juce::Colour(0xff401858).withAlpha(0.31f);
-    const auto linePurple = juce::Colour(0xffa354dc).withAlpha(0.37f);
-    const auto suckerGold = gold.withAlpha(0.55f);
-
-    const std::array<std::array<juce::Point<float>, 4>, 8> tentacles{{
-        {{{cx - 26*scale, cy + 26*scale}, {cx - 80*scale, cy + 44*scale}, {cx - 106*scale, cy + 10*scale}, {cx - 123*scale, cy + 52*scale}}},
-        {{{cx - 34*scale, cy + 36*scale}, {cx - 77*scale, cy + 78*scale}, {cx - 39*scale, cy + 85*scale}, {cx - 89*scale, cy + 112*scale}}},
-        {{{cx - 20*scale, cy + 43*scale}, {cx - 45*scale, cy + 96*scale}, {cx - 7*scale, cy + 105*scale}, {cx - 43*scale, cy + 129*scale}}},
-        {{{cx - 8*scale, cy + 48*scale}, {cx - 16*scale, cy + 108*scale}, {cx + 15*scale, cy + 112*scale}, {cx + 2*scale, cy + 137*scale}}},
-        {{{cx + 27*scale, cy + 32*scale}, {cx + 81*scale, cy + 46*scale}, {cx + 104*scale, cy + 11*scale}, {cx + 126*scale, cy + 52*scale}}},
-        {{{cx + 34*scale, cy + 42*scale}, {cx + 87*scale, cy + 75*scale}, {cx + 53*scale, cy + 95*scale}, {cx + 97*scale, cy + 112*scale}}},
-        {{{cx + 18*scale, cy + 45*scale}, {cx + 43*scale, cy + 97*scale}, {cx + 9*scale, cy + 107*scale}, {cx + 48*scale, cy + 130*scale}}},
-        {{{cx + 4*scale, cy + 49*scale}, {cx + 16*scale, cy + 106*scale}, {cx - 14*scale, cy + 114*scale}, {cx - 1*scale, cy + 139*scale}}}
-    }};
-
-    for (size_t i = 0; i < tentacles.size(); ++i)
-    {
-        const auto& points = tentacles[i];
-        juce::Path arm;
-        arm.startNewSubPath(points[0]);
-        arm.cubicTo(points[1], points[2], points[3]);
-        g.setColour(juce::Colour(0x50000000));
-        g.strokePath(arm, juce::PathStrokeType((16.0f - static_cast<float>(i % 3) * 1.8f) * scale,
-                                               juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        g.setColour(inkPurple);
-        g.strokePath(arm, juce::PathStrokeType((12.0f - static_cast<float>(i % 3) * 1.5f) * scale,
-                                               juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
-        g.setColour(linePurple);
-        g.strokePath(arm, juce::PathStrokeType(1.2f * scale, juce::PathStrokeType::curved,
-                                               juce::PathStrokeType::rounded));
-
-        for (auto t = 0.30f; t < 0.91f; t += 0.12f)
-        {
-            const auto u = 1.0f - t;
-            const auto px = u*u*u*points[0].x + 3*u*u*t*points[1].x + 3*u*t*t*points[2].x + t*t*t*points[3].x;
-            const auto py = u*u*u*points[0].y + 3*u*u*t*points[1].y + 3*u*t*t*points[2].y + t*t*t*points[3].y;
-            const auto radius = 1.6f * scale;
-            g.setColour(suckerGold);
-            g.fillEllipse(px - radius, py - radius, radius * 2.0f, radius * 2.0f);
-        }
-    }
-
-    auto head = juce::Rectangle<float>(cx - 42*scale, cy - 40*scale, 84*scale, 89*scale);
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff632c84).withAlpha(0.46f), head.getTopLeft(),
-                                           juce::Colour(0xff160b26).withAlpha(0.58f), head.getBottomRight(), false));
-    g.fillEllipse(head);
-    g.setColour(juce::Colour(0xffbb82df).withAlpha(0.48f));
-    g.drawEllipse(head, 1.5f * scale);
-
-    for (auto eyeX : {cx - 17*scale, cx + 17*scale})
-    {
-        g.setColour(juce::Colour(0xff160a1e));
-        g.fillEllipse(eyeX - 5*scale, cy - 9*scale, 10*scale, 7*scale);
-        g.setColour(gold.withAlpha(0.77f));
-        g.fillEllipse(eyeX - 1.5f*scale, cy - 8*scale, 3.0f*scale, 5.0f*scale);
-    }
-
-    // Small brow ridges and decorative flash-like curls keep the mascot original.
-    g.setColour(juce::Colour(0xffdfb7ff).withAlpha(0.33f));
-    for (auto side : {-1.0f, 1.0f})
-    {
-        juce::Path ridge;
-        ridge.startNewSubPath(cx + side * 25*scale, cy - 24*scale);
-        ridge.quadraticTo(cx + side * 7*scale, cy - 48*scale, cx - side * 3*scale, cy - 34*scale);
-        ridge.quadraticTo(cx + side * 4*scale, cy - 22*scale, cx + side * 14*scale, cy - 25*scale);
-        g.strokePath(ridge, juce::PathStrokeType(1.4f * scale));
-    }
-}
 }
 
 class KrakenCurveDisplay final : public juce::Component,
@@ -419,12 +376,13 @@ public:
         g.setColour(panelEdge);
         g.drawRoundedRectangle(box.reduced(0.5f), 12.0f, 1.0f);
 
-        auto inner = getLocalBounds().reduced(16, 14);
+        auto inner = getLocalBounds().reduced(16, 9);
         const auto labelsWidth = 64;
         constexpr int valueWidth = 74;
+        constexpr int rowGap = 27;
         auto drawMeter = [&](const juce::String& label, float db, int row, const juce::Colour& colour)
         {
-            auto line = inner.withY(inner.getY() + row * 35).withHeight(22);
+            auto line = inner.withY(inner.getY() + row * rowGap).withHeight(20);
             g.setColour(muted);
             g.setFont(juce::Font(juce::FontOptions(9.5f, juce::Font::bold)));
             g.drawText(label, line.removeFromLeft(labelsWidth), juce::Justification::centredLeft);
@@ -445,7 +403,7 @@ public:
         drawMeter("INPUT", inputHoldDb, 0, purple);
         drawMeter("OUTPUT", outputHoldDb, 1, gold);
 
-        auto grLine = inner.withY(inner.getY() + 70).withHeight(22);
+        auto grLine = inner.withY(inner.getY() + 2 * rowGap).withHeight(20);
         g.setColour(muted);
         g.setFont(juce::Font(juce::FontOptions(9.5f, juce::Font::bold)));
         g.drawText("REDUCTION", grLine.removeFromLeft(labelsWidth), juce::Justification::centredLeft);
@@ -481,11 +439,13 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     : AudioProcessorEditor(&p), processor(p),
       customLookAndFeel(std::make_unique<KrakenLookAndFeel>()),
       curveDisplay(std::make_unique<KrakenCurveDisplay>(p)),
-      meterDisplay(std::make_unique<KrakenMeterDisplay>(p))
+      meterDisplay(std::make_unique<KrakenMeterDisplay>(p)),
+      panelMural(juce::ImageCache::getFromMemory(BinaryData::BayMural_jpg, BinaryData::BayMural_jpgSize)),
+      todbTag(juce::ImageCache::getFromMemory(BinaryData::TODBTag_jpg, BinaryData::TODBTag_jpgSize))
 {
     setSize(1040, 650);
     setResizable(true, true);
-    setResizeLimits(900, 590, 1350, 900);
+    setResizeLimits(900, 650, 1350, 900);
 
     styleSlider(driveSlider, driveLabel, "DRIVE");
     styleSlider(ceilingSlider, ceilingLabel, "CEILING");
@@ -499,7 +459,7 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     outputSlider.setDoubleClickReturnValue(true, 0.0);
     driveSlider.setTooltip("Drive: input gain before the clipper. More drive pushes the sound further into the clipping curve.");
     ceilingSlider.setTooltip("Ceiling: the level where clipping reaches its limit. Output trim is applied afterward and can raise the final level above the ceiling.");
-    kneeSlider.setTooltip("Knee: how gradually Soft and Medium approach the ceiling. Hard clipping ignores this setting.");
+    kneeSlider.setTooltip("Knee rounds the shoulder as the signal crosses the Ceiling. Raise Drive until the curve reaches the ceiling to hear it. Hard ignores Knee.");
     mixSlider.setTooltip("Mix: blend between the dry input and clipped signal. 100% is fully processed.");
     outputSlider.setTooltip("Output: final level trim after clipping. Watch the Output meter; positive gain can raise the signal above 0 dBFS.");
     driveSlider.setTextValueSuffix(" dB");
@@ -523,9 +483,9 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     softButton.onClick = [this] { setCharacter(0); };
     mediumButton.onClick = [this] { setCharacter(1); };
     hardButton.onClick = [this] { setCharacter(2); };
-    softButton.setTooltip("Soft: the widest, smoothest transition into the ceiling.");
-    mediumButton.setTooltip("Medium: a tighter transition for a firmer clip.");
-    hardButton.setTooltip("Hard: flat-top clipping at the selected ceiling; the Knee control has no effect.");
+    softButton.setTooltip("Soft: widest, roundest shoulder. A higher Knee starts smoothing earlier.");
+    mediumButton.setTooltip("Medium: tighter shoulder with a firmer edge than Soft.");
+    hardButton.setTooltip("Hard: clips straight to a flat top. Knee has no effect in this mode.");
 
     for (auto* button : {static_cast<juce::Button*>(&bypassButton),
                          static_cast<juce::Button*>(&deltaButton)})
@@ -552,10 +512,34 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     presetSelector.setTooltip("Choose a starting point: 808 Weight for bass, Drum Punch for drums, Medium Punch for general use, or Bus Glue for a subtle blend. Then adjust Drive and Output by ear.");
     presetSelector.onChange = [this]
     {
-        if (presetSelector.getSelectedId() > 1)
-            applyPreset(presetSelector.getSelectedId());
+        const auto selectedPreset = presetSelector.getSelectedId();
+        if (selectedPreset > 1)
+        {
+            applyPreset(selectedPreset);
+            presetStatusLabel.setText("STARTING POINT LOADED  •  TWEAK IT YOUR WAY", juce::dontSendNotification);
+            presetSelector.setSelectedId(1, juce::dontSendNotification);
+        }
     };
     addAndMakeVisible(presetSelector);
+
+    for (auto* button : {static_cast<juce::Button*>(&savePresetButton),
+                         static_cast<juce::Button*>(&loadPresetButton)})
+    {
+        addAndMakeVisible(button);
+        button->setLookAndFeel(customLookAndFeel.get());
+    }
+    savePresetButton.setTooltip("Save all current settings to a .dcpreset file in Documents\\TODB\\Double Cup Clipper\\Presets.");
+    loadPresetButton.setTooltip("Load a saved Double Cup Clipper .dcpreset file.");
+    savePresetButton.onClick = [this] { saveUserPreset(); };
+    loadPresetButton.onClick = [this] { loadUserPreset(); };
+
+    addAndMakeVisible(presetStatusLabel);
+    presetStatusLabel.setText("HELLA SAUCE  •  YOUR SOUND, YOUR CALL", juce::dontSendNotification);
+    presetStatusLabel.setJustificationType(juce::Justification::centredLeft);
+    presetStatusLabel.setColour(juce::Label::textColourId, violet.withAlpha(0.9f));
+    presetStatusLabel.setFont(juce::Font(juce::FontOptions("Impact", 10.0f,
+                                                           juce::Font::bold | juce::Font::italic)
+                                              .withFallbacks({"Arial Black", "Arial"})));
 
     driveAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.parameters, "drive", driveSlider);
     ceilingAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(processor.parameters, "ceiling", ceilingSlider);
@@ -565,7 +549,7 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
 
     addAndMakeVisible(curveDisplay.get());
     addAndMakeVisible(meterDisplay.get());
-    curveDisplay->setTooltip("Read left to right: input level is along the bottom, and output level is up the side. At full scale, 1.0 equals 0 dBFS. The curve shows the processed sound; the dashed diagonal shows the same signal with no clipping. A flatter top means stronger clipping. Bypass shows the input line; Delta shows only what changed.");
+    curveDisplay->setTooltip("Horizontal axis: signal before Drive. Vertical axis: output. 1.0 is 0 dBFS. The bright curve shows the processed signal; the dashed diagonal is the unprocessed signal. A flatter top means more clipping. Bypass passes the input; Delta plays only what changed.");
     meterDisplay->setTooltip("Input and Output show sample peaks in dBFS. A red Output bar means the signal is above 0 dBFS and may clip in a later plug-in or output. Reduction shows how much level the clipping curve removes.");
     timerCallback();
     startTimerHz(24);
@@ -583,6 +567,8 @@ KrakenKlipperAudioProcessorEditor::~KrakenKlipperAudioProcessorEditor()
                          static_cast<juce::Button*>(&deltaButton)})
         button->setLookAndFeel(nullptr);
     presetSelector.setLookAndFeel(nullptr);
+    savePresetButton.setLookAndFeel(nullptr);
+    loadPresetButton.setLookAndFeel(nullptr);
 }
 
 void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::Label& label,
@@ -599,15 +585,24 @@ void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::
     label.setText(name, juce::dontSendNotification);
     label.setJustificationType(juce::Justification::centred);
     label.setColour(juce::Label::textColourId, paper);
-    label.setFont(juce::Font(juce::FontOptions(12.0f, juce::Font::bold)));
+    label.setFont(juce::Font(juce::FontOptions("Impact", 12.0f,
+                                               juce::Font::bold | juce::Font::italic)
+                                  .withFallbacks({"Arial Black", "Arial"})));
     label.attachToComponent(&slider, false);
 }
 
 void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds().toFloat();
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff10091b), bounds.getTopLeft(),
-                                           juce::Colour(0xff07060c), bounds.getBottomRight(), false));
+    g.fillAll(ink);
+    if (panelMural.isValid())
+    {
+        g.setOpacity(0.52f);
+        g.drawImageWithin(panelMural, 0, 0, getWidth(), getHeight(),
+                          juce::RectanglePlacement::stretchToFit);
+        g.setOpacity(1.0f);
+    }
+    g.setColour(ink.withAlpha(0.32f));
     g.fillAll();
 
     juce::ColourGradient ambient(juce::Colour(0xff51236c).withAlpha(0.32f), bounds.getWidth() * 0.78f,
@@ -617,7 +612,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillRect(bounds);
 
     auto header = bounds.removeFromTop(102.0f);
-    g.setColour(juce::Colour(0xff120c1e));
+    g.setColour(juce::Colour(0xff120c1e).withAlpha(0.76f));
     g.fillRect(header);
     g.setColour(gold.withAlpha(0.75f));
     g.drawLine(0.0f, 101.0f, static_cast<float>(getWidth()), 101.0f, 1.2f);
@@ -627,9 +622,6 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     drawBayBridge(g, artArea);
     drawDoubleCupMark(g, juce::Rectangle<float>(getWidth() * 0.605f, 49.0f,
                                                  getWidth() * 0.055f, 45.0f));
-    drawKraken(g, juce::Rectangle<float>(getWidth() * 0.68f, 10.0f,
-                                         getWidth() * 0.09f, 91.0f));
-
     auto logoTile = juce::Rectangle<float>(22.0f, 17.0f, 76.0f, 67.0f);
     g.setColour(juce::Colour(0xff1e112b));
     g.fillRoundedRectangle(logoTile, 12.0f);
@@ -638,9 +630,11 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     drawLightning(g, juce::Rectangle<float>(logoTile.getX() + 8.0f, logoTile.getY() + 12.0f,
                                             19.0f, 42.0f));
     g.setColour(paper);
-    g.setFont(juce::Font(juce::FontOptions(23.0f, juce::Font::bold)));
-    g.drawText("DC", juce::Rectangle<int>(static_cast<int>(logoTile.getX() + 28.0f),
-                                            static_cast<int>(logoTile.getY() + 8.0f), 43, 50),
+    g.setFont(juce::Font(juce::FontOptions("Impact", 15.0f,
+                                           juce::Font::bold | juce::Font::italic)
+                             .withFallbacks({"Arial Black", "Arial"})));
+    g.drawText("TODB", juce::Rectangle<int>(static_cast<int>(logoTile.getX() + 27.0f),
+                                              static_cast<int>(logoTile.getY() + 15.0f), 45, 35),
                juce::Justification::centred);
     g.setColour(gold.withAlpha(0.7f));
     g.drawLine(33.0f, 79.0f, 86.0f, 79.0f, 1.2f);
@@ -649,7 +643,8 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     const auto titleWidth = juce::jmax(280, static_cast<int>(getWidth() * 0.54f) - 142);
     const auto titleSize = juce::jlimit(24.0f, 29.0f, 25.0f + (getWidth() - 900) * 0.025f);
     const auto titleBounds = juce::Rectangle<int>(112, 17, titleWidth, 39);
-    g.setFont(juce::Font(juce::FontOptions("Impact", titleSize, juce::Font::bold)
+    g.setFont(juce::Font(juce::FontOptions("Impact", titleSize,
+                                           juce::Font::bold | juce::Font::italic)
                              .withFallbacks({"Arial Black", "Arial"})));
     g.setColour(juce::Colour(0xff3e1a5c));
     g.drawText(title, titleBounds.translated(2, 3), juce::Justification::centredLeft);
@@ -658,12 +653,14 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(paper);
     g.drawText(title, titleBounds, juce::Justification::centredLeft);
     g.setColour(violet);
-    g.setFont(juce::Font(juce::FontOptions(11.0f, juce::Font::bold)));
-    g.drawText("BAY AREA PLUGINS #001  |  Twon On Da Beat", 115, 56, 420, 19,
+    g.setFont(juce::Font(juce::FontOptions("Impact", 12.0f,
+                                           juce::Font::bold | juce::Font::italic)
+                             .withFallbacks({"Arial Black", "Arial"})));
+    g.drawText("TODB  •  TWON ON DA BEAT  •  HELLA SAUCE", 115, 56, 420, 19,
                juce::Justification::centredLeft);
     g.setColour(muted);
     g.setFont(juce::Font(juce::FontOptions(10.0f, juce::Font::bold)));
-    g.drawText("SAN FRANCISCO BAY | GOLDEN GATE TO THE DEEP", 115, 75, 440, 16,
+    g.drawText("THE YAY AREA  •  BAY BRIDGE  •  510 / 415 / 707", 115, 75, 440, 16,
                juce::Justification::centredLeft);
 
     g.setColour(gold.withAlpha(0.92f));
@@ -672,13 +669,17 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(muted);
     g.drawText("AUTO CHANNELS: MONO / STEREO", getWidth() - 220, 43, 190, 15,
                juce::Justification::centredRight);
-    g.setColour(purple.withAlpha(0.5f));
-    g.drawText("FIRST RELEASE", getWidth() - 180, 65, 150, 14,
+    g.setColour(violet);
+    g.setFont(juce::Font(juce::FontOptions("Impact", 11.0f,
+                                           juce::Font::bold | juce::Font::italic)
+                             .withFallbacks({"Arial Black", "Arial"})));
+    g.drawText("YADADAMEAN?", getWidth() - 180, 65, 150, 14,
                juce::Justification::centredRight);
 
     auto controlsCard = juce::Rectangle<float>(22.0f, 113.0f, getWidth() - 44.0f, 258.0f);
-    g.setColour(panel.withAlpha(0.90f));
+    g.setColour(panel.withAlpha(0.80f));
     g.fillRoundedRectangle(controlsCard, 16.0f);
+    drawSprayPaint(g, controlsCard.reduced(3.0f));
     g.setColour(panelEdge);
     g.drawRoundedRectangle(controlsCard, 16.0f, 1.1f);
 
@@ -691,31 +692,66 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawRoundedRectangle(modeCard, 10.0f, 1.0f);
 
     g.setColour(muted);
-    g.setFont(juce::Font(juce::FontOptions(10.0f, juce::Font::bold)));
-    g.drawText("CHARACTER", 42, 131, 94, 16, juce::Justification::centredLeft);
+    g.setFont(juce::Font(juce::FontOptions("Impact", 11.0f,
+                                           juce::Font::bold | juce::Font::italic)
+                             .withFallbacks({"Arial Black", "Arial"})));
+    g.drawText("CLIP STYLE  /  PICK YOUR SAUCE", 42, 131, 245, 16,
+               juce::Justification::centredLeft);
     const auto captionControlWidth = (getWidth() - 120) / 5;
     const auto captionFirstX = 56;
-    const std::array<juce::String, 5> hints{{"MORE DRIVE = MORE CLIP", "MAX CLIP LEVEL", "SOFTER OR SHARPER",
-                                             "DRY / EFFECT BLEND", "FINAL LOUDNESS"}};
+    const std::array<juce::String, 5> hints{{"PUSH INTO THE CLIP", "TOP LIMIT", "ROUND THE EDGE",
+                                             "DRY / WET BLEND", "AFTER THE CLIP"}};
     g.setColour(muted);
-    g.setFont(juce::Font(juce::FontOptions(8.5f, juce::Font::bold)));
+    g.setFont(juce::Font(juce::FontOptions(9.0f, juce::Font::bold)));
     for (int i = 0; i < static_cast<int>(hints.size()); ++i)
         g.drawText(hints[static_cast<size_t>(i)], captionFirstX + i * captionControlWidth, 351,
                    captionControlWidth - 2, 13, juce::Justification::centred);
 
-    g.setColour(juce::Colour(0xff1b1028).withAlpha(0.78f));
+    g.setColour(juce::Colour(0xff1b1028).withAlpha(0.72f));
     const auto lowerCardY = 382.0f;
-    const auto lowerCardHeight = 235.0f;
+    const auto lowerCardHeight = static_cast<float>(getHeight() - 415);
     const auto leftCardWidth = static_cast<float>(getWidth() - 426);
     g.fillRoundedRectangle(juce::Rectangle<float>(45.0f, lowerCardY, leftCardWidth, lowerCardHeight), 16.0f);
     g.setColour(panelEdge.withAlpha(0.8f));
     g.drawRoundedRectangle(juce::Rectangle<float>(45.0f, lowerCardY, leftCardWidth, lowerCardHeight), 16.0f, 1.0f);
 
-    g.setColour(juce::Colour(0xff1b1028).withAlpha(0.90f));
+    g.setColour(juce::Colour(0xff1b1028).withAlpha(0.70f));
     const auto rightCardX = static_cast<float>(getWidth() - 366);
     g.fillRoundedRectangle(juce::Rectangle<float>(rightCardX, lowerCardY, 334.0f, lowerCardHeight), 16.0f);
     g.setColour(panelEdge.withAlpha(0.8f));
     g.drawRoundedRectangle(juce::Rectangle<float>(rightCardX, lowerCardY, 334.0f, lowerCardHeight), 16.0f, 1.0f);
+
+    auto tagFrame = juce::Rectangle<float>(static_cast<float>(getWidth() - 253),
+                                           static_cast<float>(getHeight() - 140), 221.0f, 98.0f);
+    g.setColour(juce::Colour(0xff0a0710));
+    g.fillRoundedRectangle(tagFrame, 7.0f);
+    if (todbTag.isValid())
+    {
+        g.saveState();
+        g.reduceClipRegion(tagFrame.toNearestInt().reduced(2));
+        g.drawImage(todbTag, static_cast<int>(tagFrame.getX() + 2.0f),
+                    static_cast<int>(tagFrame.getY() + 2.0f), 217, 94,
+                    0, static_cast<int>(std::lround(todbTag.getHeight() * 0.211f)),
+                    todbTag.getWidth(), static_cast<int>(std::lround(todbTag.getHeight() * 0.646f)), false);
+        g.restoreState();
+    }
+    g.setColour(violet.withAlpha(0.9f));
+    g.drawRoundedRectangle(tagFrame, 7.0f, 1.0f);
+    auto tagCaption = juce::Rectangle<int>(static_cast<int>(rightCardX + 12.0f),
+                                           static_cast<int>(tagFrame.getY() + 3.0f), 100, 92);
+    g.setColour(paper);
+    g.setFont(juce::Font(juce::FontOptions("Impact", 15.0f,
+                                           juce::Font::bold | juce::Font::italic)
+                             .withFallbacks({"Arial Black", "Arial"})));
+    g.drawText("THE YAY", tagCaption.removeFromTop(24), juce::Justification::centredLeft);
+    g.setColour(violet);
+    g.drawText("HELLA SAUCE", tagCaption.removeFromTop(23), juce::Justification::centredLeft);
+    g.setColour(muted);
+    g.setFont(juce::Font(juce::FontOptions("Impact", 9.0f,
+                                           juce::Font::bold | juce::Font::italic)
+                             .withFallbacks({"Arial Black", "Arial"})));
+    g.drawText("510  /  415  /  707", tagCaption.removeFromTop(18), juce::Justification::centredLeft);
+    g.drawText("YADADAMEAN?", tagCaption, juce::Justification::centredLeft);
 
     auto footer = juce::Rectangle<float>(0.0f, static_cast<float>(getHeight() - 24),
                                          static_cast<float>(getWidth()), 24.0f);
@@ -725,7 +761,7 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     g.drawLine(0.0f, footer.getY(), footer.getRight(), footer.getY(), 0.8f);
     g.setColour(muted);
     g.setFont(juce::Font(juce::FontOptions(9.0f, juce::Font::bold)));
-    g.drawText("BAY AREA PLUGINS #001  |  TODB / TWON ON DA BEAT  |  8X REAL-TIME OVERSAMPLING",
+    g.drawText("TODB  /  TWON ON DA BEAT   •   HELLA SAUCE  •  8X REAL-TIME OVERSAMPLING",
                footer.toNearestInt().reduced(20, 0), juce::Justification::centredLeft);
 }
 
@@ -737,7 +773,10 @@ void KrakenKlipperAudioProcessorEditor::resized()
     hardButton.setBounds(278, 153, 112, 31);
     bypassButton.setBounds(width - 420, 126, 105, 37);
     deltaButton.setBounds(width - 300, 126, 94, 37);
-    presetSelector.setBounds(width - 196, 126, 163, 37);
+    presetSelector.setBounds(width - 196, 126, 163, 34);
+    savePresetButton.setBounds(width - 196, 164, 78, 22);
+    loadPresetButton.setBounds(width - 113, 164, 80, 22);
+    presetStatusLabel.setBounds(412, 164, width - 620, 22);
 
     const auto controlW = (width - 120) / 5;
     const auto firstX = 56;
@@ -754,7 +793,7 @@ void KrakenKlipperAudioProcessorEditor::resized()
     place(outputSlider, 4);
 
     curveDisplay->setBounds(62, 397, width - 450, getHeight() - 455);
-    meterDisplay->setBounds(width - 354, 397, 322, 126);
+    meterDisplay->setBounds(width - 354, 397, 322, 112);
 }
 
 void KrakenKlipperAudioProcessorEditor::timerCallback()
@@ -774,7 +813,11 @@ void KrakenKlipperAudioProcessorEditor::setCharacter(int index)
 void KrakenKlipperAudioProcessorEditor::setPluginParameter(const juce::String& id, float value)
 {
     if (auto* parameter = processor.parameters.getParameter(id))
+    {
+        parameter->beginChangeGesture();
         parameter->setValueNotifyingHost(parameter->convertTo0to1(value));
+        parameter->endChangeGesture();
+    }
 }
 
 void KrakenKlipperAudioProcessorEditor::applyPreset(int preset)
@@ -795,4 +838,95 @@ void KrakenKlipperAudioProcessorEditor::applyPreset(int preset)
     setPluginParameter("mix", values.mix);
     setPluginParameter("output", values.output);
     setPluginParameter("character", values.character);
+}
+
+void KrakenKlipperAudioProcessorEditor::saveUserPreset()
+{
+    auto presetFolder = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
+                            .getChildFile("TODB")
+                            .getChildFile("Double Cup Clipper")
+                            .getChildFile("Presets");
+    if (presetFolder.createDirectory().failed())
+    {
+        presetStatusLabel.setText("COULDN'T CREATE THE PRESET FOLDER", juce::dontSendNotification);
+        return;
+    }
+
+    activePresetChooser = std::make_shared<juce::FileChooser>(
+        "Save a Double Cup Clipper preset", presetFolder.getChildFile("My-Double-Cup-Preset.dcpreset"),
+        "*.dcpreset");
+    auto chooser = activePresetChooser;
+    juce::Component::SafePointer<KrakenKlipperAudioProcessorEditor> safeThis(this);
+    chooser->launchAsync(juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles,
+        [safeThis](const juce::FileChooser& fileChooser)
+        {
+            if (safeThis == nullptr)
+                return;
+
+            const auto selected = fileChooser.getResult();
+            if (selected == juce::File{})
+            {
+                safeThis->presetStatusLabel.setText("SAVE CANCELLED", juce::dontSendNotification);
+                return;
+            }
+
+            auto outputFile = selected;
+            if (!outputFile.getFileExtension().equalsIgnoreCase(".dcpreset"))
+                outputFile = outputFile.withFileExtension("dcpreset");
+
+            if (auto xml = safeThis->processor.parameters.copyState().createXml())
+            {
+                if (outputFile.replaceWithText(xml->toString()))
+                    safeThis->presetStatusLabel.setText("SAVED  •  " + outputFile.getFileName(),
+                                                        juce::dontSendNotification);
+                else
+                    safeThis->presetStatusLabel.setText("COULDN'T WRITE THAT PRESET FILE",
+                                                        juce::dontSendNotification);
+            }
+            else
+            {
+                safeThis->presetStatusLabel.setText("COULDN'T BUILD THE PRESET FILE",
+                                                    juce::dontSendNotification);
+            }
+        });
+}
+
+void KrakenKlipperAudioProcessorEditor::loadUserPreset()
+{
+    const auto presetFolder = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
+                                  .getChildFile("TODB")
+                                  .getChildFile("Double Cup Clipper")
+                                  .getChildFile("Presets");
+    activePresetChooser = std::make_shared<juce::FileChooser>(
+        "Load a Double Cup Clipper preset", presetFolder, "*.dcpreset");
+    auto chooser = activePresetChooser;
+    juce::Component::SafePointer<KrakenKlipperAudioProcessorEditor> safeThis(this);
+    chooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
+        [safeThis](const juce::FileChooser& fileChooser)
+        {
+            if (safeThis == nullptr)
+                return;
+
+            const auto selected = fileChooser.getResult();
+            if (selected == juce::File{})
+            {
+                safeThis->presetStatusLabel.setText("LOAD CANCELLED", juce::dontSendNotification);
+                return;
+            }
+
+            const auto xml = juce::XmlDocument::parse(selected);
+            if (xml == nullptr || !xml->hasTagName(safeThis->processor.parameters.state.getType()))
+            {
+                safeThis->presetStatusLabel.setText("THAT FILE ISN'T A DOUBLE CUP PRESET",
+                                                    juce::dontSendNotification);
+            }
+            else
+            {
+                auto state = juce::ValueTree::fromXml(*xml);
+                safeThis->processor.parameters.replaceState(state);
+                safeThis->presetSelector.setSelectedId(1, juce::dontSendNotification);
+                safeThis->presetStatusLabel.setText("PRESET LOADED  •  YADADAMEAN?",
+                                                    juce::dontSendNotification);
+            }
+        });
 }

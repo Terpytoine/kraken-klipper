@@ -21,6 +21,8 @@ private:
     void timerCallback() override;
     void setCharacter(int index);
     void applyPreset(int preset);
+    void saveUserPreset();
+    void loadUserPreset();
     void styleSlider(juce::Slider& slider, juce::Label& label, const juce::String& name);
     void setPluginParameter(const juce::String& id, float value);
 
@@ -31,7 +33,10 @@ private:
     juce::Label driveLabel, ceilingLabel, kneeLabel, mixLabel, outputLabel;
     juce::TextButton softButton{"SOFT"}, mediumButton{"MEDIUM"}, hardButton{"HARD"};
     juce::ToggleButton bypassButton{"BYPASS"}, deltaButton{"DELTA"};
+    juce::TextButton savePresetButton{"SAVE PRESET"}, loadPresetButton{"LOAD PRESET"};
     juce::ComboBox presetSelector;
+    juce::Label presetStatusLabel;
+    std::shared_ptr<juce::FileChooser> activePresetChooser;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> ceilingAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> kneeAttachment;
@@ -41,6 +46,8 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> deltaAttachment;
     std::unique_ptr<KrakenCurveDisplay> curveDisplay;
     std::unique_ptr<KrakenMeterDisplay> meterDisplay;
+    juce::Image panelMural;
+    juce::Image todbTag;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(KrakenKlipperAudioProcessorEditor)
 };
