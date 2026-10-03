@@ -166,7 +166,7 @@ public:
 
     juce::Font getTextButtonFont(juce::TextButton&, int height) override
     {
-        return juce::Font(juce::FontOptions(height > 25 ? "Segoe Print" : "Trebuchet MS", juce::jlimit(11.0f, 16.0f, height * 0.40f),
+        return juce::Font(juce::FontOptions(height > 25 ? "Segoe Print" : "Trebuchet MS", height > 25 ? 18.0f : 12.0f,
                                             juce::Font::bold)
                               .withFallbacks({"Arial Black", "Arial"}));
     }
@@ -583,8 +583,14 @@ void KrakenKlipperAudioProcessorEditor::paint(juce::Graphics& g)
     // The entire shell is a double foam-cup rim with glossy purple liquid.
     g.setColour(juce::Colour(0xff1b0630).withAlpha(0.30f));
     g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(25.0f, 10.0f), 36.0f);
+    g.setOpacity(1.0f);
     if (scaledHeader.isValid())
         g.drawImageAt(scaledHeader, 18, 0);
+    const auto headerInfo = juce::Rectangle<float>(width - 226.0f, 47.0f, 204.0f, 151.0f);
+    g.setColour(juce::Colour(0xff1d082e).withAlpha(0.92f));
+    g.fillRoundedRectangle(headerInfo, 14.0f);
+    g.setColour(gold.withAlpha(0.58f));
+    g.drawRoundedRectangle(headerInfo, 14.0f, 1.0f);
     g.setFont(juce::Font(juce::FontOptions("Trebuchet MS", 12.0f, juce::Font::bold)));
     g.setColour(gold);
     g.drawText("TODB / THE BAY", getWidth() - 214, 60, 177, 25, juce::Justification::centredRight);
