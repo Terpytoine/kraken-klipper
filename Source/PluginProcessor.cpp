@@ -61,14 +61,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout KrakenKlipperAudioProcessor:
 void KrakenKlipperAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     preparedChannels = juce::jlimit(1, 2, getTotalNumInputChannels());
+    maximumBlockSize = juce::jmax(1, samplesPerBlock);
     oversampling = std::make_unique<juce::dsp::Oversampling<float>>(
         static_cast<size_t>(preparedChannels), 3,
         juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true, true);
-    oversampling->initProcessing(static_cast<size_t>(juce::jmax(1, samplesPerBlock)));
+    oversampling->initProcessing(static_cast<size_t>(maximumBlockSize));
     oversampling->reset();
     setLatencySamples(static_cast<int>(std::ceil(oversampling->getLatencyInSamples())));
 
-    const auto highRateCapacity = juce::jmax(1, samplesPerBlock) * oversamplingFactor + 64;
+    const auto highRateCapacity = maximumBlockSize * oversamplingFactor;
     dryOversampled.setSize(preparedChannels, highRateCapacity, false, true, true);
 
     const auto highSampleRate = sampleRate * static_cast<double>(oversamplingFactor);
@@ -157,70 +158,104 @@ void KrakenKlipperAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     syncSmoothers();
     const auto samples = buffer.getNumSamples();
     const auto channels = juce::jmin(inputChannels, preparedChannels, buffer.getNumChannels());
+    if (samples <= 0 || channels <= 0)
+    {
+        inputPeak.store(0.0f, std::memory_order_relaxed);
+        outputPeak.store(0.0f, std::memory_order_relaxed);
+        gainReduction.store(0.0f, std::memory_order_relaxed);
+        return;
+    }
+
+    // Hosts can pass occasional blocks larger than prepareToPlay's hint. Sanitize
+    // input first, then process those blocks in bounded chunks so JUCE's
+    // preallocated oversampling buffers are never overrun.
+    for (auto channel = 0; channel < channels; ++channel)
+    {
+        auto* audio = buffer.getWritePointer(channel);
+        for (auto sample = 0; sample < samples; ++sample)
+            if (!std::isfinite(audio[sample]))
+                audio[sample] = 0.0f;
+    }
+
     float inPeak = 0.0f;
     for (auto channel = 0; channel < channels; ++channel)
         inPeak = juce::jmax(inPeak, buffer.getMagnitude(channel, 0, samples));
 
-    auto inputBlock = juce::dsp::AudioBlock<float>(buffer).getSubsetChannelBlock(0, static_cast<size_t>(channels));
-    auto& highRateBlock = oversampling->processSamplesUp(inputBlock);
-    const auto highSamples = highRateBlock.getNumSamples();
-    auto dryBlock = juce::dsp::AudioBlock<float>(dryOversampled).getSubBlock(0, highSamples);
-
-    for (auto channel = 0; channel < channels; ++channel)
-        juce::FloatVectorOperations::copy(dryBlock.getChannelPointer(static_cast<size_t>(channel)),
-                                          highRateBlock.getChannelPointer(static_cast<size_t>(channel)),
-                                          static_cast<int>(highSamples));
-
-    float maxReduction = 0.0f;
-    for (size_t sample = 0; sample < highSamples; ++sample)
+    auto fullInputBlock = juce::dsp::AudioBlock<float>(buffer)
+                              .getSubsetChannelBlock(0, static_cast<size_t>(channels));
+    float maxReductionRatio = 1.0f;
+    auto sampleOffset = 0;
+    while (sampleOffset < samples)
     {
-        const auto drive = driveGain.getNextValue();
-        const auto ceiling = ceilingGain.getNextValue();
-        const auto knee = kneeRatio.getNextValue();
-        const auto style = character.getNextValue();
-        const auto wet = mixAmount.getNextValue();
-        const auto trim = outputGain.getNextValue();
-        const auto bypass = bypassAmount.getNextValue();
-        const auto delta = deltaAmount.getNextValue();
+        const auto chunkSamples = juce::jmin(maximumBlockSize, samples - sampleOffset);
+        auto inputBlock = fullInputBlock.getSubBlock(static_cast<size_t>(sampleOffset),
+                                                      static_cast<size_t>(chunkSamples));
+        auto& highRateBlock = oversampling->processSamplesUp(inputBlock);
+        const auto highSamples = highRateBlock.getNumSamples();
+        auto dryBlock = juce::dsp::AudioBlock<float>(dryOversampled)
+                            .getSubsetChannelBlock(0, static_cast<size_t>(channels))
+                            .getSubBlock(0, highSamples);
 
         for (auto channel = 0; channel < channels; ++channel)
         {
-            auto* audio = highRateBlock.getChannelPointer(static_cast<size_t>(channel));
-            const auto dry = dryBlock.getChannelPointer(static_cast<size_t>(channel))[sample];
-            const auto driven = dry * drive;
-            const auto shaped = kraken::clipBlend(driven, ceiling, knee, style);
-            const auto processed = juce::jlimit(-ceiling, ceiling,
-                (dry + (shaped - dry) * wet) * trim);
-            const auto difference = processed - dry;
-            const auto effected = difference * delta + processed * (1.0f - delta);
-            audio[sample] = dry * bypass + effected * (1.0f - bypass);
-
-            const auto drivenMagnitude = std::abs(driven);
-            const auto shapedMagnitude = std::abs(shaped);
-            if (drivenMagnitude > shapedMagnitude && drivenMagnitude > 1.0e-8f)
-                maxReduction = juce::jmax(maxReduction, gainToDb(drivenMagnitude / juce::jmax(shapedMagnitude, 1.0e-8f)));
+            auto* upsampled = highRateBlock.getChannelPointer(static_cast<size_t>(channel));
+            juce::FloatVectorOperations::copy(dryBlock.getChannelPointer(static_cast<size_t>(channel)),
+                                              upsampled, static_cast<int>(highSamples));
         }
+
+        for (size_t sample = 0; sample < highSamples; ++sample)
+        {
+            const auto drive = driveGain.getNextValue();
+            const auto ceiling = ceilingGain.getNextValue();
+            const auto knee = kneeRatio.getNextValue();
+            const auto style = character.getNextValue();
+            const auto wet = mixAmount.getNextValue();
+            const auto trim = outputGain.getNextValue();
+            const auto bypass = bypassAmount.getNextValue();
+            const auto delta = deltaAmount.getNextValue();
+
+            for (auto channel = 0; channel < channels; ++channel)
+            {
+                auto* audio = highRateBlock.getChannelPointer(static_cast<size_t>(channel));
+                const auto dry = dryBlock.getChannelPointer(static_cast<size_t>(channel))[sample];
+                const auto driven = dry * drive;
+                const auto shaped = kraken::clipBlend(driven, ceiling, knee, style);
+                // Ceiling is the clipping threshold. Output is a true post-clip
+                // trim, so positive gain is allowed to raise the final level.
+                const auto processed = (dry + (shaped - dry) * wet) * trim;
+                const auto difference = processed - dry;
+                const auto effected = difference * delta + processed * (1.0f - delta);
+                audio[sample] = dry * bypass + effected * (1.0f - bypass);
+
+                const auto drivenMagnitude = std::abs(driven);
+                const auto shapedMagnitude = std::abs(shaped);
+                if (drivenMagnitude > shapedMagnitude && drivenMagnitude > 1.0e-8f)
+                    maxReductionRatio = juce::jmax(maxReductionRatio,
+                        drivenMagnitude / juce::jmax(shapedMagnitude, 1.0e-8f));
+            }
+        }
+
+        // Downsample the processed high-rate buffer back into the original
+        // normal-rate host block for this chunk.
+        oversampling->processSamplesDown(inputBlock);
+        sampleOffset += chunkSamples;
     }
 
-    oversampling->processSamplesDown(highRateBlock);
-
-    const auto bypassRequested = bypassValue->load(std::memory_order_relaxed) >= 0.5f;
-    const auto deltaRequested = deltaValue->load(std::memory_order_relaxed) >= 0.5f;
-    const auto applyCeilingGuard = !bypassRequested && !deltaRequested;
-    const auto finalLimit = ceilingGain.getTargetValue();
     float outPeak = 0.0f;
     for (auto channel = 0; channel < channels; ++channel)
     {
         auto* audio = buffer.getWritePointer(channel);
         for (auto sample = 0; sample < samples; ++sample)
-            if (applyCeilingGuard)
-                audio[sample] = juce::jlimit(-finalLimit, finalLimit, audio[sample]);
+        {
+            if (!std::isfinite(audio[sample]))
+                audio[sample] = 0.0f;
+        }
         outPeak = juce::jmax(outPeak, buffer.getMagnitude(channel, 0, samples));
     }
 
     inputPeak.store(inPeak, std::memory_order_relaxed);
     outputPeak.store(outPeak, std::memory_order_relaxed);
-    gainReduction.store(maxReduction, std::memory_order_relaxed);
+    gainReduction.store(gainToDb(maxReductionRatio), std::memory_order_relaxed);
 }
 
 juce::AudioProcessorEditor* KrakenKlipperAudioProcessor::createEditor()
