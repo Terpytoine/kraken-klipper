@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include <memory>
+#include <array>
 
 class KrakenCurveDisplay;
 class KrakenMeterDisplay;
@@ -47,7 +48,12 @@ private:
     std::unique_ptr<KrakenCurveDisplay> curveDisplay;
     std::unique_ptr<KrakenMeterDisplay> meterDisplay;
     juce::Image panelMural;
+    juce::Image headerArtwork;
     juce::Image todbTag;
+    std::array<float, 8> lastVisualParameters{};
+    float syrupEnergy = 0.0f;
+    float syrupPhase = 0.0f;
+    bool visualParametersInitialised = false;
     juce::TooltipWindow tooltips{this, 500};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(KrakenKlipperAudioProcessorEditor)
