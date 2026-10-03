@@ -338,8 +338,11 @@ public:
         {
             const auto x = plot.getX() + plot.getWidth() * static_cast<float>(i) / 4.0f;
             const auto y = plot.getY() + plot.getHeight() * static_cast<float>(i) / 4.0f;
-            g.drawLine(x, plot.getY(), x, plot.getBottom(), 1.0f);
-            g.drawLine(plot.getX(), y, plot.getRight(), y, 1.0f);
+            const auto isZero = i == 2;
+            g.setColour(isZero ? juce::Colour(0xff625777) : juce::Colour(0xff241b32));
+            const auto stroke = isZero ? 1.35f : 1.0f;
+            g.drawLine(x, plot.getY(), x, plot.getBottom(), stroke);
+            g.drawLine(plot.getX(), y, plot.getRight(), y, stroke);
         }
         g.setColour(juce::Colour(0xff625777));
         for (int i = 0; i < 16; ++i)
@@ -384,11 +387,11 @@ public:
         auto titleRow = getLocalBounds().removeFromTop(22).reduced(15, 0);
         g.drawText("TRANSFER CURVE", titleRow.removeFromLeft(120), juce::Justification::centredLeft);
         const auto legend = bypass ? juce::String("BYPASS: UNCHANGED INPUT")
-                           : delta ? juce::String("PURPLE = WHAT CHANGED")
-                                   : juce::String("PURPLE = SHAPED  |  DASHED = NO CLIP");
+                           : delta ? juce::String("CURVE = WHAT CHANGED")
+                                   : juce::String("CURVE = SHAPED  |  DASHED = NO CLIP");
         g.drawText(legend, titleRow.removeFromLeft(titleRow.getWidth() - 76),
                    juce::Justification::centredLeft);
-        g.drawText("OUTPUT", titleRow.removeFromRight(64), juce::Justification::centredRight);
+        g.drawText("Y: OUTPUT", titleRow.removeFromRight(64), juce::Justification::centredRight);
         g.drawText("INPUT LEVEL", juce::Rectangle<int>(static_cast<int>(plot.getX()), getHeight() - 20,
                                                        static_cast<int>(plot.getWidth()), 14),
                    juce::Justification::centred);
@@ -425,7 +428,8 @@ public:
             g.setColour(juce::Colour(0xff21192c));
             g.fillRoundedRectangle(bar, 5.0f);
             const auto normalized = juce::jlimit(0.0f, 1.0f, (db + 36.0f) / 36.0f);
-            g.setColour(colour);
+            const auto overZero = label == "OUTPUT" && db > 0.0f;
+            g.setColour(overZero ? juce::Colour(0xfff36b8f) : colour);
             g.fillRoundedRectangle(bar.withWidth(bar.getWidth() * normalized), 5.0f);
             g.setColour(paper);
             g.setFont(juce::Font(juce::FontOptions(10.0f)));
@@ -499,6 +503,9 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     kneeSlider.setTextValueSuffix(" dB");
     mixSlider.setTextValueSuffix(" %");
     outputSlider.setTextValueSuffix(" dB");
+    for (auto* slider : {&driveSlider, &ceilingSlider, &kneeSlider, &outputSlider})
+        slider->setNumDecimalPlacesToDisplay(1);
+    mixSlider.setNumDecimalPlacesToDisplay(0);
 
     for (auto* button : {static_cast<juce::Button*>(&softButton),
                          static_cast<juce::Button*>(&mediumButton),
@@ -554,8 +561,8 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
 
     addAndMakeVisible(curveDisplay.get());
     addAndMakeVisible(meterDisplay.get());
-    curveDisplay->setTooltip("Read left to right: input level is along the bottom, and output level is up the side. The purple line shows the sound after clipping; the dashed diagonal shows the same signal with no clipping. A flatter top means stronger clipping. Bypass shows the unprocessed line; Delta shows only what changed.");
-    meterDisplay->setTooltip("Input and Output show sample peak level in dBFS. Reduction shows how much level the clipper is removing.");
+    curveDisplay->setTooltip("Read left to right: input level is along the bottom, and output level is up the side. At full scale, 1.0 equals 0 dBFS. The curve shows the processed sound; the dashed diagonal shows the same signal with no clipping. A flatter top means stronger clipping. Bypass shows the input line; Delta shows only what changed.");
+    meterDisplay->setTooltip("Input and Output show sample peaks in dBFS. A red Output bar means the signal is above 0 dBFS and may clip in a later plug-in or output. Reduction shows how much level the clipping curve removes.");
     timerCallback();
     startTimerHz(24);
 }

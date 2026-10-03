@@ -61,7 +61,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout KrakenKlipperAudioProcessor:
 void KrakenKlipperAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     preparedChannels = juce::jlimit(1, 2, getTotalNumInputChannels());
-    maximumBlockSize = juce::jmax(1, samplesPerBlock);
+    // Keep scratch memory bounded even if a host reports an unusually large
+    // preferred block. Any larger real-time block is handled in safe chunks.
+    maximumBlockSize = juce::jlimit(1, 32768, samplesPerBlock);
     oversampling = std::make_unique<juce::dsp::Oversampling<float>>(
         static_cast<size_t>(preparedChannels), 3,
         juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true, true);
