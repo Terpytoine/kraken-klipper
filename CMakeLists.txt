@@ -11,6 +11,7 @@ include(FetchContent)
 FetchContent_Declare(
     JUCE
     URL https://github.com/juce-framework/JUCE/archive/refs/tags/9.0.3.zip
+    URL_HASH SHA256=e12f3c39395480050a4fe50d820b248c0cfa32f65fd04d4c1b68eecfd4cc31f2
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(JUCE)
