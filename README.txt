@@ -62,7 +62,7 @@ after later processing or lossy encoding.
 INSTALL
 -------
 1. Close your DAW.
-2. Run DOUBLE-CUP-CLIPPER-Setup-v1.0.3.exe and approve the standard administrator prompt.
+2. Run DOUBLE-CUP-CLIPPER-Setup-v1.0.4.exe and approve the standard administrator prompt.
 3. Reopen your DAW, rescan VST3 plug-ins, and load DOUBLE CUP CLIPPER as an effect.
 
 The installer places the VST3 here:
@@ -96,7 +96,7 @@ Open PowerShell in this folder and run:
   .\build-windows.ps1
 
 This builds the VST3, runs the transfer-curve and processor smoke checks, and
-creates DOUBLE-CUP-CLIPPER-Setup-v1.0.3.exe plus a matching source archive in
+creates DOUBLE-CUP-CLIPPER-Setup-v1.0.4.exe plus a matching source archive in
 .\dist\.
 
 BUILD AND VERIFICATION
@@ -118,3 +118,7 @@ LICENSING
 This project uses JUCE 9.0.3 through CMake FetchContent and is shared under
 AGPLv3-or-later. Read THIRD_PARTY_NOTICES.md before building or redistributing.
 
+
+
+COMPACT INTERFACE (1.0.4)
+Opens at 800 x 480. Drag the lower-right resize handle to scale the whole interface. Both width and height can shrink to 700 x 420. The graph, artwork and mouse targets stay aligned. Unusual window shapes use centered margins rather than cropping controls.
