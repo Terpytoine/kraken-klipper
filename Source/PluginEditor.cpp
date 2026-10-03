@@ -317,7 +317,9 @@ void drawKraken(juce::Graphics& g, juce::Rectangle<float> area)
 }
 }
 
-class KrakenCurveDisplay final : public juce::Component, private juce::Timer
+class KrakenCurveDisplay final : public juce::Component,
+                                 public juce::SettableTooltipClient,
+                                 private juce::Timer
 {
 public:
     explicit KrakenCurveDisplay(KrakenKlipperAudioProcessor& p) : processor(p) { startTimerHz(24); }
@@ -402,7 +404,9 @@ private:
     KrakenKlipperAudioProcessor& processor;
 };
 
-class KrakenMeterDisplay final : public juce::Component, private juce::Timer
+class KrakenMeterDisplay final : public juce::Component,
+                                 public juce::SettableTooltipClient,
+                                 private juce::Timer
 {
 public:
     explicit KrakenMeterDisplay(KrakenKlipperAudioProcessor& p) : processor(p) { startTimerHz(30); }
