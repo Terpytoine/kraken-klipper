@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(KrakenKlipper VERSION 1.0.1 LANGUAGES C CXX)
+project(KrakenKlipper VERSION 1.0.2 LANGUAGES C CXX)
 
 # Link the Windows runtime statically so the VST3 does not require a separate
 # Visual C++ runtime installer on a friend's computer.
@@ -16,7 +16,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(JUCE)
 
 juce_add_plugin(KrakenKlipper
-    COMPANY_NAME "Bay Area Plugins"
+    COMPANY_NAME "TODB"
     BUNDLE_ID com.bayareaplugins.doublecupclipper
     PLUGIN_MANUFACTURER_CODE TODB
     PLUGIN_CODE Kk01
@@ -32,6 +32,11 @@ juce_add_plugin(KrakenKlipper
 )
 
 juce_generate_juce_header(KrakenKlipper)
+
+juce_add_binary_data(DoubleCupArtwork SOURCES
+    Source/Resources/BayMural.jpg
+    Source/Resources/TODBTag.jpg
+)
 
 target_sources(KrakenKlipper PRIVATE
     Source/ClipperCurve.h
@@ -53,6 +58,7 @@ target_compile_definitions(KrakenKlipper PUBLIC
 target_link_libraries(KrakenKlipper PRIVATE
     juce::juce_audio_utils
     juce::juce_dsp
+    DoubleCupArtwork
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags
     juce::juce_recommended_warning_flags

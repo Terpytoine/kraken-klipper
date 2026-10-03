@@ -1,4 +1,4 @@
-DOUBLE CUP CLIPPER — BAY AREA PLUGINS / TODB
+DOUBLE CUP CLIPPER — TODB
 Copyright (C) 2026 TODB
 
 This program is free software: you can redistribute it and/or modify it under

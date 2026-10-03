@@ -1,14 +1,16 @@
-DOUBLE CUP CLIPPER
-Bay Area Plugins #001 | Twon On Da Beat
+DOUBLE CUP CLIPPER  •  TODB
+Twon On Da Beat  |  The Yay Area  |  Hella Sauce
 ============================================================
 
-A free Windows x64 VST3 clipper built around a smooth adjustable knee,
-three clipping characters, 8x oversampling, parallel mix, output trim,
-Delta audition, live meters, a live transfer curve, and quick-start presets.
+A free Windows x64 VST3 clipper with a smooth adjustable knee, distinct Soft,
+Medium, and Hard clipping, 8x oversampling, parallel mix, output trim, Delta
+audition, live meters, a live transfer curve, quick-start presets, and save/load
+for your own .dcpreset files.
 
-The original interface art nods to the San Francisco Bay Area, the Bay Bridge,
-lightning, and a double-cup mark. The project is an independent release and is
-not affiliated with any other audio company, sports team, or brand.
+The interface is painted in a dark Bay Area mural style, with the Bay Bridge,
+purple spill art, and the supplied TODB logo. “Yadadamean?” is Bay Area slang
+for “do you know what I mean?” The project is independent and is not affiliated
+with another audio company, sports team, or brand.
 
 QUICK START
 -----------
@@ -22,6 +24,8 @@ QUICK START
    of the original transients.
 6. Set OUTPUT for final loudness. For a fair before/after check, match the
    output loudness to the bypassed sound and watch the OUTPUT meter.
+7. Use SAVE PRESET to keep your settings in a .dcpreset file. LOAD PRESET opens
+   a preset you saved or received from someone else. Preset files can be shared.
 
 The curve is a picture of the signal: read input level along the bottom and
 output level up the side. The dashed diagonal is the signal without clipping.
@@ -43,7 +47,11 @@ Output     Final level trim after the clipper: -24 to +12 dB.
 Bypass     Fades between the processed sound and the latency-aligned input.
 Delta      Lets you hear the difference between the processed and dry signal.
 Presets    808 Weight, Drum Punch, Medium Punch, and Bus Glue are starting
-           points. Choose one, then adjust any control to taste.
+           points. Choose one, then adjust any control to taste. SAVE PRESET
+           and LOAD PRESET share complete settings in .dcpreset files.
+
+User presets default to:
+Documents\TODB\Double Cup Clipper\Presets
 
 The clip shape runs at 8x the host sample rate to reduce aliasing. The Ceiling
 is the clip threshold; Output trim can intentionally raise the final level above
@@ -54,14 +62,17 @@ after later processing or lossy encoding.
 INSTALL
 -------
 1. Close your DAW.
-2. Run DOUBLE-CUP-CLIPPER-Setup.exe and approve the standard administrator prompt.
+2. Run DOUBLE-CUP-CLIPPER-Setup-v1.0.2.exe and approve the standard administrator prompt.
 3. Reopen your DAW, rescan VST3 plug-ins, and load DOUBLE CUP CLIPPER as an effect.
 
-The installer places the VST3 in the shared Windows folder:
-C:\Program Files\Common Files\VST3
+The installer places the VST3 here:
+C:\Program Files\Common Files\VST3\TODB\DOUBLE CUP CLIPPER.vst3
 
-When replacing the earlier Kraken Klipper build, Setup removes its old VST3
-folder so your DAW does not scan both names as separate plug-ins.
+Installer support files go here:
+C:\Program Files\TODB\Double Cup Clipper
+
+Setup removes the earlier direct-install bundle and the old Kraken bundle so
+your DAW does not scan duplicate copies.
 
 No self-updater is included. To share the plug-in, send friends the installer
 from the project's GitHub Releases page:
@@ -85,7 +96,8 @@ Open PowerShell in this folder and run:
   .\build-windows.ps1
 
 This builds the VST3, runs the transfer-curve and processor smoke checks, and
-creates DOUBLE-CUP-CLIPPER-Setup.exe plus a matching source archive in .\dist\.
+creates DOUBLE-CUP-CLIPPER-Setup-v1.0.2.exe plus a matching source archive in
+.\dist\.
 
 BUILD AND VERIFICATION
 ----------------------

@@ -3,9 +3,9 @@ $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $bundle = Join-Path $projectRoot "build\KrakenKlipper_artefacts\Release\VST3\DOUBLE CUP CLIPPER.vst3"
 $dist = Join-Path $projectRoot "dist"
 $sourceStage = Join-Path $dist "source-stage"
-$sourceZip = Join-Path $dist "Double-Cup-Clipper-Source.zip"
+$sourceZip = Join-Path $dist "Double-Cup-Clipper-Source-v1.0.2.zip"
 $legacySourceZip = Join-Path $dist "Kraken-Klipper-Source.zip"
-$setupExe = Join-Path $dist "DOUBLE-CUP-CLIPPER-Setup.exe"
+$setupExe = Join-Path $dist "DOUBLE-CUP-CLIPPER-Setup-v1.0.2.exe"
 $setupScript = Join-Path $projectRoot "KRAKEN-KLIPPER.iss"
 
 New-Item -ItemType Directory -Path $dist -Force | Out-Null
