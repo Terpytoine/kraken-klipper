@@ -18,6 +18,15 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Run curve and processor checks
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Validate actual VST3 host compatibility
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip
+          Expand-Archive pluginval.zip -DestinationPath pluginval
+          $validator = Get-ChildItem pluginval -Recurse -Filter pluginval.exe | Select-Object -First 1
+          if (-not $validator) { throw "pluginval executable not found" }
+          & $validator.FullName --strictness-level 5 --validate-in-process --output-dir validation-logs --validate "build\KrakenKlipper_artefacts\Release\VST3\DOUBLE CUP CLIPPER.vst3" | Tee-Object -FilePath validation-console.txt
+          if ($LASTEXITCODE -ne 0) { throw "VST3 validation failed" }
       - name: Install Inno Setup
         run: choco install innosetup --yes --no-progress
       - name: Package one-file installer
@@ -26,8 +35,11 @@ jobs:
       - name: Upload installer and matching source
         uses: actions/upload-artifact@v4
         with:
-          name: DOUBLE-CUP-CLIPPER-Windows-Installer
+          name: DOUBLE-CUP-CLIPPER-v1.0.2-Windows-Installer
           path: |
             dist/*.exe
-            dist/*Source.zip
+            dist/*Source*.zip
+            build/Double-Cup-Clipper-UI.png
+            validation-logs/*
+            validation-console.txt
           if-no-files-found: error
