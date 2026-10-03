@@ -124,11 +124,49 @@ bool runLayout(const juce::AudioChannelSet& layout, int channelCount)
     processor.releaseResources();
     return true;
 }
+
+std::vector<float> renderKnee(float knee, int style)
+{
+    KrakenKlipperAudioProcessor processor;
+    setParameter(processor, "knee", knee);
+    setParameter(processor, "character", static_cast<float>(style));
+    setParameter(processor, "drive", 6.0f);
+    processor.prepareToPlay(48000.0, 256);
+    std::vector<float> result;
+    juce::MidiBuffer midi;
+    for (int block = 0; block < 20; ++block)
+    {
+        juce::AudioBuffer<float> audio(2, 256);
+        for (int i = 0; i < 256; ++i)
+        {
+            const auto value = 0.55f * std::sin(static_cast<float>(block * 256 + i) * 0.035f);
+            audio.setSample(0, i, value);
+            audio.setSample(1, i, value);
+        }
+        processor.processBlock(audio, midi);
+        if (block >= 10)
+            result.insert(result.end(), audio.getReadPointer(0), audio.getReadPointer(0) + 256);
+    }
+    return result;
+}
 }
 
 int main()
 {
     juce::ScopedJuceInitialiser_GUI gui;
+    for (int style = 0; style < 3; ++style)
+    {
+        const auto narrow = renderKnee(0.0f, style);
+        const auto wide = renderKnee(24.0f, style);
+        double squared = 0.0;
+        for (size_t i = 0; i < narrow.size(); ++i)
+            squared += std::pow(static_cast<double>(narrow[i] - wide[i]), 2.0);
+        const auto difference = std::sqrt(squared / static_cast<double>(narrow.size()));
+        if (style < 2 && difference < 0.01)
+            return fail("Knee did not meaningfully change processed Soft/Medium audio.");
+        if (style == 2 && difference > 1.0e-6)
+            return fail("Hard clipping unexpectedly depended on Knee.");
+    }
     // Both host sessions and .dcpreset files use this same parameter state.
     KrakenKlipperAudioProcessor original;
     setParameter(original, "drive", 11.0f);
