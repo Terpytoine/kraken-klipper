@@ -128,6 +128,7 @@ bool runLayout(const juce::AudioChannelSet& layout, int channelCount)
 
 int main()
 {
+    juce::ScopedJuceInitialiser_GUI gui;
     // Both host sessions and .dcpreset files use this same parameter state.
     KrakenKlipperAudioProcessor original;
     setParameter(original, "drive", 11.0f);
@@ -154,6 +155,24 @@ int main()
         return EXIT_FAILURE;
     if (!runLayout(juce::AudioChannelSet::stereo(), 2))
         return EXIT_FAILURE;
+
+    // Open, draw, resize and close the real editor, including embedded artwork.
+    for (int pass = 0; pass < 3; ++pass)
+    {
+        std::unique_ptr<juce::AudioProcessorEditor> editor(restored.createEditor());
+        if (!editor) return fail("Editor did not open.");
+        editor->setSize(pass == 1 ? 1350 : 1000, pass == 1 ? 900 : 650);
+        const auto snapshot = editor->createComponentSnapshot(editor->getLocalBounds());
+        if (!snapshot.isValid()) return fail("Editor did not render.");
+        if (pass == 0)
+        {
+            juce::File output = juce::File::getCurrentWorkingDirectory().getChildFile("Double-Cup-Clipper-UI.png");
+            juce::FileOutputStream stream(output);
+            juce::PNGImageFormat png;
+            if (!stream.openedOk() || !png.writeImageToStream(snapshot, stream))
+                return fail("Could not save the real editor preview.");
+        }
+    }
 
     std::cout << "Double Cup Clipper processor smoke checks passed.\n";
     return EXIT_SUCCESS;
