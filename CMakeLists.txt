@@ -70,7 +70,11 @@ if(BUILD_TESTING)
         Source
         "${CMAKE_CURRENT_BINARY_DIR}/KrakenKlipper_artefacts/JuceLibraryCode"
     )
-    target_link_libraries(DoubleCupProcessorChecks PRIVATE KrakenKlipper)
+    target_link_libraries(DoubleCupProcessorChecks PRIVATE
+        KrakenKlipper
+        juce::juce_audio_processors
+        juce::juce_dsp
+    )
     target_compile_features(DoubleCupProcessorChecks PRIVATE cxx_std_17)
     add_test(NAME DoubleCupProcessorChecks COMMAND DoubleCupProcessorChecks)
 endif()

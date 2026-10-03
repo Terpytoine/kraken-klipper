@@ -12,30 +12,38 @@ not affiliated with any other audio company, sports team, or brand.
 
 QUICK START
 -----------
-1. Choose a preset, or start with MEDIUM.
-2. Raise DRIVE until the sound gets the weight you want.
-3. Use KNEE to make the transition into clipping smoother or sharper.
-4. Lower MIX if you want some of the original sound back.
-5. Use OUTPUT to set the final level, then watch the OUTPUT meter.
+1. Pick a starting point: 808 Weight for bass, Drum Punch for drums,
+   Medium Punch for general use, or Bus Glue for a subtle blend.
+2. Slowly raise DRIVE. More Drive means more clipping and a denser sound.
+3. Set CEILING to choose the level where the clipper starts holding the signal down.
+4. Turn KNEE up for a smoother transition; turn it down for a sharper one.
+   Hard mode ignores Knee.
+5. MIX blends the original and clipped sound. Use less than 100% to keep more
+   of the original transients.
+6. Set OUTPUT for final loudness. For a fair before/after check, match the
+   output loudness to the bypassed sound and watch the OUTPUT meter.
 
 The curve is a picture of the signal: read input level along the bottom and
 output level up the side. The dashed diagonal is the signal without clipping.
-The purple line is the current clipped sound. A flatter top means stronger
-clipping. Hover over the curve or controls for more help.
+The bright line is the sound after processing. A flatter top means stronger
+clipping. Bypass helps compare the original and processed sound. Delta lets
+you hear only the difference. Hover over controls and displays for more help.
 
 CONTROLS
 --------
-Drive      Input gain before clipping: -24 to +24 dB.
-Ceiling    The level where the clipper reaches its ceiling: -24 to 0 dBFS.
-Knee       Width of the smooth transition: 0 dB is sharp; 24 dB is wide.
+Drive      Raises the input before clipping: -24 to +24 dB.
+Ceiling    Sets the clipper's level target: -24 to 0 dBFS.
+Knee       Smoothness of the transition: 0 dB is sharp; 24 dB is wide.
 Soft       The widest, smoothest transition. Knee has its strongest effect here.
 Medium     A tighter transition for a firmer sound.
 Hard       Flat-top clipping. The Knee control does not change Hard mode.
-Mix        Blends the original input with the clipped signal: 0% to 100%.
+Mix        Blends the original input with the clipped signal: 0% is dry;
+           100% is fully processed.
 Output     Final level trim after the clipper: -24 to +12 dB.
 Bypass     Fades between the processed sound and the latency-aligned input.
 Delta      Lets you hear the difference between the processed and dry signal.
-Presets    Load a starting point; adjust any control afterward.
+Presets    808 Weight, Drum Punch, Medium Punch, and Bus Glue are starting
+           points. Choose one, then adjust any control to taste.
 
 The clip shape runs at 8x the host sample rate to reduce aliasing. The Ceiling
 is the clip threshold; Output trim can intentionally raise the final level above
