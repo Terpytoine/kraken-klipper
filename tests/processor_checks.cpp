@@ -199,7 +199,7 @@ int main()
     {
         std::unique_ptr<juce::AudioProcessorEditor> editor(restored.createEditor());
         if (!editor) return fail("Editor did not open.");
-        editor->setSize(pass == 1 ? 1350 : 1000, pass == 1 ? 900 : 650);
+        editor->setSize(pass == 1 ? 1350 : 1000, pass == 1 ? 1040 : 790);
         const auto snapshot = editor->createComponentSnapshot(editor->getLocalBounds());
         if (!snapshot.isValid()) return fail("Editor did not render.");
         if (pass == 0)
@@ -209,6 +209,17 @@ int main()
             juce::PNGImageFormat png;
             if (!stream.openedOk() || !png.writeImageToStream(snapshot, stream))
                 return fail("Could not save the real editor preview.");
+        }
+        // Exercise animation timers while changing controls, then destroy the editor.
+        // Artwork reactions stay on the message thread and must survive rapid reopening.
+        for (int change = 0; change < 4; ++change)
+        {
+            setParameter(restored, "drive", static_cast<float>(change * 4));
+            setParameter(restored, "character", static_cast<float>(change % 3));
+            juce::Thread::sleep(40);
+            juce::Timer::callPendingTimersSynchronously();
+            if (!editor->createComponentSnapshot(editor->getLocalBounds()).isValid())
+                return fail("Reactive artwork did not render during parameter changes.");
         }
     }
 
