@@ -64,6 +64,7 @@ private:
 
     std::unique_ptr<juce::dsp::Oversampling<float>> oversampling;
     juce::AudioBuffer<float> dryOversampled;
+    int maximumBlockSize = 1;
     int preparedChannels = 2;
     std::atomic<float> inputPeak = 0.0f;
     std::atomic<float> outputPeak = 0.0f;

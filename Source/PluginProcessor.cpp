@@ -192,7 +192,7 @@ void KrakenKlipperAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         const auto chunkSamples = juce::jmin(maximumBlockSize, samples - sampleOffset);
         auto inputBlock = fullInputBlock.getSubBlock(static_cast<size_t>(sampleOffset),
                                                       static_cast<size_t>(chunkSamples));
-        auto& highRateBlock = oversampling->processSamplesUp(inputBlock);
+        auto highRateBlock = oversampling->processSamplesUp(inputBlock);
         const auto highSamples = highRateBlock.getNumSamples();
         auto dryBlock = juce::dsp::AudioBlock<float>(dryOversampled)
                             .getSubsetChannelBlock(0, static_cast<size_t>(channels))
