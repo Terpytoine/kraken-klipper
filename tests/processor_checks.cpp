@@ -199,6 +199,9 @@ int main()
     {
         std::unique_ptr<juce::AudioProcessorEditor> editor(restored.createEditor());
         if (!editor) return fail("Editor did not open.");
+        // A real host shows the editor before dispatching mouse events.
+        // JUCE deliberately returns no hit target for a hidden component.
+        editor->setVisible(true);
         if (editor->getWidth() != 800 || editor->getHeight() != 480)
             return fail("Editor did not open at the compact default size.");
         const std::array<juce::Point<int>, 6> sizes{{{800, 480}, {700, 420}, {1400, 1000},
