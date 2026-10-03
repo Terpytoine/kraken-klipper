@@ -484,6 +484,11 @@ KrakenKlipperAudioProcessorEditor::KrakenKlipperAudioProcessorEditor(KrakenKlipp
     styleSlider(kneeSlider, kneeLabel, "KNEE");
     styleSlider(mixSlider, mixLabel, "MIX");
     styleSlider(outputSlider, outputLabel, "OUTPUT");
+    driveSlider.setDoubleClickReturnValue(true, 0.0);
+    ceilingSlider.setDoubleClickReturnValue(true, -1.0);
+    kneeSlider.setDoubleClickReturnValue(true, 12.0);
+    mixSlider.setDoubleClickReturnValue(true, 100.0);
+    outputSlider.setDoubleClickReturnValue(true, 0.0);
     driveSlider.setTooltip("Drive: input gain before the clipper. More drive pushes the sound further into the clipping curve.");
     ceilingSlider.setTooltip("Ceiling: the level where clipping reaches its limit. Output trim is applied afterward and can raise the final level above the ceiling.");
     kneeSlider.setTooltip("Knee: how gradually Soft and Medium approach the ceiling. Hard clipping ignores this setting.");
@@ -576,7 +581,6 @@ void KrakenKlipperAudioProcessorEditor::styleSlider(juce::Slider& slider, juce::
     slider.setLookAndFeel(customLookAndFeel.get());
     slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 88, 23);
-    slider.setDoubleClickReturnValue(true, 0.0);
     slider.setColour(juce::Slider::thumbColourId, gold);
     slider.setColour(juce::Slider::rotarySliderFillColourId, purple);
     slider.setColour(juce::Slider::rotarySliderOutlineColourId, panelEdge);
